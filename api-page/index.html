@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <meta name="description" content="Ada API — dokumentasi dan konsol API modern bergaya old money.">
-    <meta name="keywords" content="Ada API, Dokumentasi API, REST API">
+    <meta name="keywords" content="Ada API, Dokumentasi API, REST API, Developer Tools">
     <meta name="author" content="Ada">
 
     <meta property="og:type" content="website">
@@ -16,298 +16,578 @@
     <link rel="icon" href="/src/icon.png" type="image/png">
     <title>Ada API</title>
 
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
-    <!-- Bootstrap -->
+    <!-- Icons & Bootstrap -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"/>
 
     <!-- ======================= -->
-    <!--  OLD MONEY MAIN STYLE   -->
+    <!--  STYLE OLD MONEY + GLASS -->
     <!-- ======================= -->
-
     <style>
+        :root {
+            --sidebar-width: 250px;
+        }
 
-/* BODY */
-body {
-    background: #f5f1e8;
-    font-family: "Outfit", sans-serif;
-    color: #1f2522;
-}
+        * {
+            box-sizing: border-box;
+        }
 
-/* =============================================== */
-/* SIDEBAR (OLD MONEY + GLASSMORPHISM)             */
-/* =============================================== */
+        body {
+            margin: 0;
+            background: #f5f1e8;
+            font-family: "Outfit", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #1f2522;
+        }
 
-.side-nav {
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 250px;
-    padding: 1.2rem;
-    background: rgba(10, 24, 19, 0.92);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    display: flex;
-    flex-direction: column;
-}
+        a {
+            text-decoration: none;
+        }
 
-.logo-frame {
-    width: 52px;
-    height: 52px;
-    padding: 6px;
-    border-radius: 14px;
-    background: radial-gradient(circle at 30% 20%, #1a2f27, #08140f);
-    border: 1px solid rgba(214, 193, 140, 0.85);
-    box-shadow:
-        inset 0 0 10px rgba(255,255,255,0.07),
-        0 0 0 2px rgba(214, 193, 140, 0.25);
-}
-.logo-img {
-    width: 100%;
-    height: 100%;
-    border-radius: 10px;
-}
+        /* =============================================== */
+        /* SIDEBAR (OLD MONEY + GLASSMORPHISM)             */
+        /* =============================================== */
 
-/* BRAND TEXT */
-.brand-mark {
-    font-family: "Playfair Display", serif;
-    font-size: 1.1rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #f4efe3;
-}
-.brand-subtext {
-    font-size: 0.75rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: rgba(244,239,227,0.55);
-}
+        .side-nav {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            padding: 1.2rem;
+            background: rgba(10, 24, 19, 0.96);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            z-index: 1040;
+            transform: translateX(0);
+            transition: transform 0.25s ease;
+        }
 
-/* MENU PANEL (KACA BURAM PREMIUM) */
-.side-nav-links {
-    margin-top: 2rem;
-    padding: 0.9rem;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(214,193,140,0.35);
-    border-radius: 22px;
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow:
-        0 20px 35px rgba(0,0,0,0.35),
-        inset 0 0 0 1px rgba(255,255,255,0.05);
-}
+        .logo-frame {
+            width: 52px;
+            height: 52px;
+            padding: 6px;
+            border-radius: 14px;
+            background: radial-gradient(circle at 30% 20%, #1a2f27, #08140f);
+            border: 1px solid rgba(214, 193, 140, 0.85);
+            box-shadow:
+                inset 0 0 10px rgba(255,255,255,0.07),
+                0 0 0 2px rgba(214, 193, 140, 0.25);
+        }
 
-/* MENU ITEM */
-.side-nav-link {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.55rem 1rem;
-    margin-bottom: 0.2rem;
-    border-radius: 999px;
-    color: rgba(244,239,227,0.88);
-    font-size: 0.93rem;
-    transition: 0.18s ease;
-    text-decoration: none;
-}
+        .logo-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            object-fit: cover;
+        }
 
-.side-nav-link:hover {
-    background: rgba(240,225,195,0.22);
-    color: #ffffff;
-    transform: translateX(4px);
-}
+        .brand-mark {
+            font-family: "Playfair Display", serif;
+            font-size: 1.1rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #f4efe3;
+        }
 
-.side-nav-link.active {
-    background: rgba(240,225,195,0.28);
-    color: #ffffff;
-    font-weight: 500;
-}
+        .brand-subtext {
+            font-size: 0.75rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(244,239,227,0.55);
+        }
 
-/* COLLAPSE BUTTON */
-.nav-collapse-btn {
-    margin-top: auto;
-    padding: 0.55rem 0;
-    border-radius: 999px;
-    border: 1px solid rgba(214,193,140,0.45);
-    background: rgba(12,24,18,0.75);
-    color: #e8dcc3;
-}
+        .side-nav-links {
+            margin-top: 2rem;
+            padding: 0.9rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(214,193,140,0.35);
+            border-radius: 22px;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow:
+                0 20px 35px rgba(0,0,0,0.35),
+                inset 0 0 0 1px rgba(255,255,255,0.05);
+        }
 
-/* =============================================== */
-/* HEADER                                          */
-/* =============================================== */
+        .side-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.55rem 1rem;
+            margin-bottom: 0.2rem;
+            border-radius: 999px;
+            color: rgba(244,239,227,0.88);
+            font-size: 0.93rem;
+            transition: 0.18s ease;
+        }
 
-.main-header {
-    margin-left: 250px;
-    padding: 1rem 2rem;
-    background: rgba(245,241,232,0.75);
-    border-bottom: 1px solid rgba(27,38,32,0.07);
-    backdrop-filter: blur(12px);
-}
+        .side-nav-link i {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
 
-/* =============================================== */
-/* HERO SECTION                                    */
-/* =============================================== */
+        .side-nav-link:hover {
+            background: rgba(240,225,195,0.22);
+            color: #ffffff;
+            transform: translateX(4px);
+        }
 
-.hero-section {
-    margin-left: 250px;
-    display: grid;
-    padding: 2rem 3rem;
-    grid-template-columns: 1.3fr 1fr;
-    align-items: center;
-    gap: 3rem;
-}
+        .side-nav-link.active {
+            background: rgba(240,225,195,0.28);
+            color: #ffffff;
+            font-weight: 500;
+        }
 
-.hero-title {
-    font-family: "Playfair Display", serif;
-    font-size: 3rem;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-}
+        .nav-collapse-btn {
+            margin-top: auto;
+            padding: 0.55rem 0;
+            border-radius: 999px;
+            border: 1px solid rgba(214,193,140,0.45);
+            background: rgba(12,24,18,0.75);
+            color: #e8dcc3;
+            cursor: pointer;
+        }
 
-.banner-frame {
-    padding: 6px;
-    border-radius: 20px;
-    background: linear-gradient(135deg, #c9b58a, #837252);
-    box-shadow: 
-        0 26px 40px rgba(0,0,0,0.26),
-        inset 0 0 0 1px rgba(255,255,255,0.6);
-}
-.banner-oldmoney {
-    width: 100%;
-    border-radius: 16px;
-}
+        .nav-collapse-btn i {
+            font-size: 0.9rem;
+        }
 
-/* =============================================== */
-/* API SECTION                                     */
-/* =============================================== */
+        /* =============================================== */
+        /* MAIN LAYOUT                                     */
+        /* =============================================== */
 
-.api-section {
-    margin-left: 250px;
-    padding: 2rem 3rem;
-}
+        .main-header,
+        .hero-section,
+        .api-section {
+            padding-inline: 2rem;
+        }
 
-/* =============================================== */
-/* MODAL                                           */
-/* =============================================== */
+        .main-header {
+            padding-block: 1rem;
+            background: rgba(245,241,232,0.85);
+            border-bottom: 1px solid rgba(27,38,32,0.07);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-.modal-elegant {
-    border-radius: 18px;
-    background: #f9f6ee;
-}
+        .header-title {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #5c5a52;
+        }
 
-/* =============================================== */
-/* CODE BLOCK                                       */
-/* =============================================== */
+        .menu-toggle {
+            display: none;
+            border: none;
+            background: transparent;
+            font-size: 1.2rem;
+        }
 
-.code-block {
-    background: #151b17;
-    padding: 1rem;
-    border-radius: 12px;
-    color: #f4efe3;
-    font-size: 0.8rem;
-}
+        .hero-section {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+            gap: 3rem;
+            padding-block: 2.5rem;
+        }
 
+        .hero-title {
+            font-family: "Playfair Display", serif;
+            font-size: clamp(2.4rem, 3.2vw, 3.1rem);
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #1f2522;
+        }
+
+        .eyebrow-text {
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            color: #9c8f72;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.22rem 0.9rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            background: #1b332a;
+            color: #f4efe3;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.45rem;
+            font-size: 0.85rem;
+            color: #7c796d;
+        }
+
+        .divider-dot {
+            font-size: 0.9rem;
+        }
+
+        .hero-description {
+            margin-top: 1.5rem;
+            max-width: 36rem;
+            font-size: 0.98rem;
+            line-height: 1.7;
+            color: #4b4b44;
+        }
+
+        .hero-btn {
+            border-radius: 999px;
+            border: 1px solid #b89b57;
+            background: rgba(232, 214, 177, 0.16);
+            color: #1f2522;
+            padding-inline: 1.5rem;
+            padding-block: 0.55rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.9rem;
+            margin-top: 1.3rem;
+        }
+
+        .hero-btn:hover {
+            background: rgba(184, 155, 87, 0.2);
+            box-shadow: 0 12px 26px rgba(0,0,0,0.12);
+        }
+
+        .hero-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            margin-top: 1rem;
+        }
+
+        .tag-chip {
+            border-radius: 999px;
+            padding: 0.25rem 0.8rem;
+            font-size: 0.75rem;
+            border: 1px solid rgba(27, 38, 32, 0.16);
+            background: rgba(255, 255, 255, 0.78);
+            color: #4a4a40;
+        }
+
+        .banner-container-oldmoney {
+            position: relative;
+            max-width: 460px;
+            margin-left: auto;
+        }
+
+        .banner-frame {
+            padding: 6px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #c9b58a, #837252);
+            box-shadow:
+                0 26px 40px rgba(0,0,0,0.26),
+                inset 0 0 0 1px rgba(255,255,255,0.6);
+        }
+
+        .banner-oldmoney {
+            width: 100%;
+            border-radius: 14px;
+            object-fit: cover;
+            display: block;
+            filter: saturate(0.9);
+        }
+
+        .banner-overlay-card {
+            position: absolute;
+            bottom: 10%;
+            left: 8%;
+            padding: 0.9rem 1.1rem;
+            border-radius: 14px;
+            background: rgba(12, 20, 17, 0.92);
+            border: 1px solid rgba(214, 193, 140, 0.9);
+            color: #f4efe3;
+            max-width: 72%;
+        }
+
+        .overlay-title {
+            font-family: "Playfair Display", serif;
+            font-size: 0.9rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .overlay-sub {
+            font-size: 0.75rem;
+            opacity: 0.85;
+        }
+
+        .overlay-status {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin-top: 0.55rem;
+            font-size: 0.8rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #6fd3a2;
+        }
+
+        /* API section */
+
+        .api-section {
+            padding-block: 1.5rem 3rem;
+        }
+
+        .section-title-oldmoney {
+            font-family: "Playfair Display", serif;
+            font-size: 1.3rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: #242821;
+        }
+
+        .section-subtitle {
+            font-size: 0.86rem;
+            color: #7e7a6d;
+        }
+
+        .section-description {
+            font-size: 0.9rem;
+            color: #5a574c;
+            max-width: 40rem;
+        }
+
+        /* Simple placeholder for API cards */
+        #apiContent {
+            margin-top: 1.5rem;
+            border-radius: 16px;
+            border: 1px dashed rgba(27,38,32,0.16);
+            padding: 1.5rem;
+            min-height: 80px;
+            font-size: 0.9rem;
+            color: #7a766a;
+        }
+
+        /* Modal & code */
+
+        .modal-elegant {
+            border-radius: 18px;
+            background: #fbf7ee;
+            border: 1px solid rgba(27, 38, 32, 0.16);
+        }
+
+        .modal-elegant .modal-header {
+            border-bottom: 1px solid rgba(27,38,32,0.08);
+            background: linear-gradient(to right, #f5efe0, #ebe0c7);
+        }
+
+        .modal-elegant .modal-title {
+            font-family: "Playfair Display", serif;
+            font-size: 1.05rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .code-block {
+            background: #151b17;
+            color: #f4efe3;
+            border-radius: 12px;
+            padding: 0.9rem 1rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.78rem;
+        }
+
+        /* Responsive layout */
+
+        @media (min-width: 992px) {
+            .main-header,
+            .hero-section,
+            .api-section {
+                margin-left: var(--sidebar-width);
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            .side-nav {
+                transform: translateX(-100%);
+            }
+
+            .side-nav.open {
+                transform: translateX(0);
+            }
+
+            body.sidebar-open {
+                overflow: hidden;
+            }
+
+            .main-header,
+            .hero-section,
+            .api-section {
+                margin-left: 0;
+                padding-inline: 1.25rem;
+            }
+
+            .hero-section {
+                grid-template-columns: 1fr;
+                padding-block: 1.8rem;
+            }
+
+            .banner-container-oldmoney {
+                margin: 1.5rem auto 0;
+            }
+
+            .menu-toggle {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                border-radius: 999px;
+                border: 1px solid rgba(27,38,32,0.18);
+                background: rgba(255,255,255,0.7);
+            }
+        }
     </style>
 </head>
 
 <body>
 
-<!-- ========================================================= -->
-<!-- SIDEBAR OLD MONEY + GLASSMORPHISM                         -->
-<!-- ========================================================= -->
+<!-- ================= SIDEBAR ================= -->
 
-<aside class="side-nav">
-
+<aside class="side-nav" id="sideNavigation" aria-label="Navigasi utama">
     <div class="side-nav-logo d-flex align-items-center gap-3">
         <div class="logo-frame">
-            <img src="/src/icon.png" class="logo-img">
+            <img src="/src/icon.png" alt="Logo Ada API" class="logo-img">
         </div>
-        <div>
-            <div class="brand-mark">Ada API</div>
-            <div class="brand-subtext">Developer Console</div>
+        <div class="d-flex flex-column">
+            <span class="brand-mark">Ada API</span>
+            <span class="brand-subtext">Developer Console</span>
         </div>
     </div>
 
-    <nav class="side-nav-links">
+    <nav class="side-nav-links mt-3" aria-label="Menu utama">
         <a href="#home" class="side-nav-link active">
             <i class="fas fa-home"></i>
             <span>Beranda</span>
         </a>
-
         <a href="#apis" class="side-nav-link">
             <i class="fas fa-plug"></i>
             <span>API</span>
         </a>
-
-        <a href="https://github.com/adamhasani" target="_blank" class="side-nav-link">
+        <a href="https://github.com/adamhasani" target="_blank" rel="noopener noreferrer" class="side-nav-link">
             <i class="fab fa-github"></i>
             <span>GitHub</span>
         </a>
     </nav>
 
-    <button class="nav-collapse-btn">
+    <button class="nav-collapse-btn" type="button" id="collapseBtn">
         <i class="fas fa-angle-left"></i>
     </button>
-
 </aside>
 
-<!-- ========================================================= -->
-<!-- HEADER                                                    -->
-<!-- ========================================================= -->
+<!-- ================= HEADER ================= -->
 
 <header class="main-header">
-    <h4 class="m-0">Ada API Documentation</h4>
+    <button class="menu-toggle" id="menuToggle" aria-label="Buka menu">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="header-title">Ada API Documentation</div>
 </header>
 
-<!-- ========================================================= -->
-<!-- HERO SECTION                                              -->
-<!-- ========================================================= -->
+<!-- ================= HERO ================= -->
 
 <section id="home" class="hero-section">
-
-    <div>
+    <div class="hero-content">
+        <p class="eyebrow-text">Ada Studio</p>
         <h1 class="hero-title">Ada API</h1>
-        <p class="mt-3">
-            Antarmuka dokumentasi API dengan gaya klasik modern: mewah, elegan, dan fokus pada kenyamanan pengembang.
+        <div class="hero-meta">
+            <span class="badge-pill">v1.0</span>
+            <span class="divider-dot">•</span>
+            <span>Private Developer Console</span>
+        </div>
+        <p class="hero-description">
+            Antarmuka dokumentasi API dengan sentuhan klasik dan modern. Dirancang untuk pengembang
+            yang mengutamakan ketenangan, keteraturan, dan pengalaman kerja yang rapi.
         </p>
-        <a href="https://github.com/adamhasani" class="btn btn-dark mt-3">
-            <i class="fab fa-github me-2"></i> GitHub
+
+        <a href="https://github.com/adamhasani"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="hero-btn">
+            <span>Profil GitHub</span>
+            <i class="fab fa-github"></i>
         </a>
+
+        <div class="hero-tags">
+            <span class="tag-chip"><i class="fas fa-check-double me-1"></i> Stable</span>
+            <span class="tag-chip"><i class="fas fa-lock me-1"></i> Secure by design</span>
+            <span class="tag-chip"><i class="fas fa-moon me-1"></i> Dark / Light aware</span>
+        </div>
     </div>
 
-    <div class="banner-frame">
-        <img src="/src/banner.gif" class="banner-oldmoney">
+    <div class="hero-visual">
+        <div class="banner-container-oldmoney">
+            <div class="banner-frame">
+                <img src="/src/banner.gif" alt="Banner Ada API" class="banner-oldmoney">
+            </div>
+            <div class="banner-overlay-card">
+                <span class="overlay-title">Ada API</span>
+                <span class="overlay-sub">Service Status</span>
+                <div class="overlay-status">
+                    <span class="status-dot"></span>
+                    <span>Operational</span>
+                </div>
+            </div>
+        </div>
     </div>
-
 </section>
 
-<!-- ========================================================= -->
-<!-- API SECTION                                               -->
-<!-- ========================================================= -->
+<!-- ================= API SECTION ================= -->
 
 <section id="apis" class="api-section">
-    <h2 class="mb-3">Daftar Endpoint</h2>
-    <p class="text-muted mb-4">Endpoint akan dimuat dari script.js secara dinamis.</p>
+    <div class="section-header-line mb-2">
+        <h2 class="section-title-oldmoney">Koleksi Endpoint</h2>
+        <p class="section-subtitle">
+            Endpoint yang dikurasi untuk integrasi yang tenang, terukur, dan konsisten.
+        </p>
+    </div>
 
-    <div id="apiContent"></div>
+    <p class="section-description">
+        Pilih salah satu endpoint di bawah untuk melihat detail, parameter, dan mencoba request secara langsung
+        melalui konsol yang terintegrasi.
+    </p>
+
+    <div id="apiContent">
+        Endpoint akan dimuat di sini melalui <code>script.js</code>.
+    </div>
 </section>
 
-<!-- ========================================================= -->
-<!-- MODAL (RESPON API)                                        -->
-<!-- ========================================================= -->
+<!-- ================= MODAL RESPONSE ================= -->
 
-<div class="modal fade" id="apiResponseModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal fade" id="apiResponseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content modal-elegant">
             <div class="modal-header">
                 <h5 class="modal-title">Respons API</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
-
             <div class="modal-body">
                 <pre id="apiResponseContent" class="code-block"></pre>
             </div>
@@ -315,13 +595,47 @@ body {
     </div>
 </div>
 
-<!-- ========================================================= -->
-<!-- SCRIPTS                                                   -->
-<!-- ========================================================= -->
+<!-- ================= SCRIPTS ================= -->
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/script.js"></script>
+
+<script>
+    // Toggle sidebar mobile
+    document.addEventListener('DOMContentLoaded', function () {
+        const menuToggle = document.getElementById('menuToggle');
+        const sideNav = document.getElementById('sideNavigation');
+        const collapseBtn = document.getElementById('collapseBtn');
+        const links = sideNav.querySelectorAll('.side-nav-link');
+
+        function closeSidebarMobile() {
+            sideNav.classList.remove('open');
+            document.body.classList.remove('sidebar-open');
+        }
+
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function () {
+                sideNav.classList.toggle('open');
+                document.body.classList.toggle('sidebar-open');
+            });
+        }
+
+        if (collapseBtn) {
+            collapseBtn.addEventListener('click', function () {
+                closeSidebarMobile();
+            });
+        }
+
+        links.forEach(link => {
+            link.addEventListener('click', function () {
+                if (window.innerWidth <= 991) {
+                    closeSidebarMobile();
+                }
+            });
+        });
+    });
+</script>
 
 </body>
 </html>
