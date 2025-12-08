@@ -12,24 +12,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         searchInput: document.getElementById('searchInput'),
         clearSearchBtn: document.getElementById('clearSearch'),
         apiContent: document.getElementById('apiContent'),
-        notificationToast: document.getElementById('notificationToast'),
-        notificationBell: document.getElementById('notificationBell'),
-        notificationBadge: document.getElementById('notificationBadge'),
+        notificationToast: document.getElementById('notificationToast'), // Toast untuk notifikasi umum
+        notificationBell: document.getElementById('notificationBell'), // Tombol lonceng
+        notificationBadge: document.getElementById('notificationBadge'), // Badge merah
         modal: {
-            instance: null,
+            instance: null, // Akan diinisialisasi nanti
             element: document.getElementById('apiResponseModal'),
             label: document.getElementById('apiResponseModalLabel'),
             desc: document.getElementById('apiResponseModalDesc'),
+            content: document.getElementById('apiResponseContent'),
+            container: document.getElementById('responseContainer'),
             endpoint: document.getElementById('apiEndpoint'),
+            spinner: document.getElementById('apiResponseLoading'),
             queryInputContainer: document.getElementById('apiQueryInputContainer'),
-            responseContent: document.getElementById('apiResponseContent'),
-            responseContainer: document.getElementById('responseContainer'),
             submitBtn: document.getElementById('submitQueryBtn'),
-            loadingIndicator: document.getElementById('apiResponseLoading'),
             copyEndpointBtn: document.getElementById('copyEndpoint'),
-            copyResponseBtn: document.getElementById('copyResponse'),
-            dialog: document.getElementById('modalDialog')
+            copyResponseBtn: document.getElementById('copyResponse')
         },
+        // Elemen yang diisi dari settings.json
         pageTitle: document.getElementById('page'),
         wm: document.getElementById('wm'),
         appName: document.getElementById('name'),
@@ -37,17 +37,65 @@ document.addEventListener('DOMContentLoaded', async () => {
         versionBadge: document.getElementById('version'),
         versionHeaderBadge: document.getElementById('versionHeader'),
         appDescription: document.getElementById('description'),
-        dynamicImage: document.getElementById('dynamicImage'),
+        dynamicImage: document.getElementById('dynamicImage'), // ID untuk gambar banner di hero section
         apiLinksContainer: document.getElementById('apiLinks')
     };
 
-    let settings = {};
-    let currentApiData = null;
-    let notificationData = [];
-    let newNotificationsCount = 0;
-    let originalBodyPaddingRight = '';
+    let settings = {}; // Untuk menyimpan data dari settings.json
+    let currentApiData = null; // Untuk menyimpan data API yang sedang ditampilkan di modal
+    let allNotifications = []; // Untuk menyimpan semua notifikasi dari JSON
 
-    // ---------- Utilities ----------
+    // --- Fungsi Utilitas ---
+    const showToast = (message, type = 'info', title = 'Notifikasi') => {
+        if (!DOM.notificationToast) return;
+        const toastBody = DOM.notificationToast.querySelector('.toast-body');
+        const toastTitleEl = DOM.notificationToast.querySelector('.toast-title');
+        const toastIcon = DOM.notificationToast.querySelector('.toast-icon');
+        
+        toastBody.textContent = message;
+        toastTitleEl.textContent = title;
+        
+        const typeConfig = {
+            success: { color: 'var(--success-color)', icon: 'fa-check-circle' },
+            error: { color: 'var(--error-color)', icon: 'fa-exclamation-circle' },
+            info: { color: 'var(--primary-color)', icon: 'fa-info-circle' },
+            notification: { color: 'var(--accent-color)', icon: 'fa-bell' }
+        };
+        
+        const config = typeConfig[type] || typeConfig.info;
+        
+        DOM.notificationToast.style.borderLeftColor = config.color;
+        toastIcon.className = `toast-icon fas ${config.icon} me-2`;
+        toastIcon.style.color = config.color;
+
+        let bsToast = bootstrap.Toast.getInstance(DOM.notificationToast);
+        if (!bsToast) {
+            bsToast = new bootstrap.Toast(DOM.notificationToast);
+        }
+        bsToast.show();
+    };
+
+    const copyToClipboard = async (text, btnElement) => {
+        if (!navigator.clipboard) {
+            showToast('Browser tidak mendukung penyalinan ke clipboard.', 'error');
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(text);
+            const originalIcon = btnElement.innerHTML;
+            btnElement.innerHTML = '<i class="fas fa-check"></i>';
+            btnElement.classList.add('copy-success');
+            showToast('Berhasil disalin ke clipboard!', 'success');
+            
+            setTimeout(() => {
+                btnElement.innerHTML = originalIcon;
+                btnElement.classList.remove('copy-success');
+            }, 1500);
+        } catch (err) {
+            showToast('Gagal menyalin teks: ' + err.message, 'error');
+        }
+    };
+
     const debounce = (func, delay) => {
         let timeout;
         return (...args) => {
@@ -56,269 +104,278 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     };
 
-    const setPageContent = (element, text, fallback = "") => {
-        if (element) element.textContent = text || fallback;
+    // --- Fungsi Notifikasi ---
+    const loadNotifications = async () => {
+        try {
+            const response = await fetch('/notifications.json'); 
+            if (!response.ok) throw new Error(`Gagal memuat notifikasi: ${response.status}`);
+            allNotifications = await response.json();
+            updateNotificationBadge();
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        }
     };
 
-    const showLoadingScreen = () => {
-        if (DOM.loadingScreen) DOM.loadingScreen.style.display = 'flex';
+    const getSessionReadNotificationIds = () => {
+        const ids = sessionStorage.getItem('sessionReadNotificationIds');
+        return ids ? JSON.parse(ids) : [];
     };
 
-    const hideLoadingScreen = () => {
-        if (!DOM.loadingScreen) return;
-        DOM.loadingScreen.style.opacity = '0';
-        setTimeout(() => {
-            DOM.loadingScreen.style.display = 'none';
-        }, 300);
+    const addSessionReadNotificationId = (id) => {
+        let ids = getSessionReadNotificationIds();
+        if (!ids.includes(id)) {
+            ids.push(id);
+            sessionStorage.setItem('sessionReadNotificationIds', JSON.stringify(ids));
+        }
     };
-
-    const showToast = (message, type = 'info') => {
-        if (!DOM.notificationToast) return;
-
-        const toastElement = DOM.notificationToast;
-        const toastBody = toastElement.querySelector('.toast-body');
-        const toastTitle = toastElement.querySelector('.toast-title');
-        const toastIcon = toastElement.querySelector('.toast-icon');
-
-        toastBody.textContent = message;
-        toastElement.className = 'toast';
-
-        switch (type) {
-            case 'success':
-                toastTitle.textContent = 'Berhasil';
-                toastIcon.className = 'toast-icon fas fa-check-circle me-2';
-                toastElement.classList.add('toast-success');
-                break;
-            case 'warning':
-                toastTitle.textContent = 'Peringatan';
-                toastIcon.className = 'toast-icon fas fa-exclamation-triangle me-2';
-                toastElement.classList.add('toast-warning');
-                break;
-            case 'error':
-                toastTitle.textContent = 'Terjadi Kesalahan';
-                toastIcon.className = 'toast-icon fas fa-times-circle me-2';
-                toastElement.classList.add('toast-error');
-                break;
-            default:
-                toastTitle.textContent = 'Notifikasi';
-                toastIcon.className = 'toast-icon fas fa-info-circle me-2';
-                toastElement.classList.add('toast-info');
+    
+    const updateNotificationBadge = () => {
+        if (!DOM.notificationBadge || !allNotifications.length) {
+             if(DOM.notificationBadge) DOM.notificationBadge.classList.remove('active');
+            return;
         }
 
-        let bsToast = bootstrap.Toast.getInstance(toastElement);
-        if (!bsToast) bsToast = new bootstrap.Toast(toastElement);
-        bsToast.show();
-    };
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); 
 
-    const displayErrorState = (message) => {
-        if (!DOM.apiContent) return;
-        DOM.apiContent.innerHTML = `
-            <div class="error-state">
-                <h3>Terjadi Kesalahan</h3>
-                <p>${message}</p>
-            </div>
-        `;
-    };
+        const sessionReadIds = getSessionReadNotificationIds();
 
-    // ---------- Theme ----------
-    const applyTheme = (theme) => {
-        DOM.body.setAttribute('data-theme', theme);
-        if (DOM.themeToggle) DOM.themeToggle.checked = theme === 'dark';
-        localStorage.setItem('theme', theme);
-    };
+        const unreadNotifications = allNotifications.filter(notif => {
+            const notificationDate = new Date(notif.date);
+            notificationDate.setHours(0, 0, 0, 0); 
+            return !notif.read && notificationDate <= today && !sessionReadIds.includes(notif.id);
+        });
 
-    const initTheme = () => {
-        const saved = localStorage.getItem('theme');
-        if (saved) {
-            applyTheme(saved);
+        if (unreadNotifications.length > 0) {
+            DOM.notificationBadge.classList.add('active');
+            DOM.notificationBell.setAttribute('aria-label', `Notifikasi (${unreadNotifications.length} belum dibaca)`);
         } else {
-            const prefersDark = window.matchMedia &&
-                window.matchMedia('(prefers-color-scheme: dark)').matches;
-            applyTheme(prefersDark ? 'dark' : 'light');
+            DOM.notificationBadge.classList.remove('active');
+            DOM.notificationBell.setAttribute('aria-label', 'Tidak ada notifikasi baru');
+        }
+    };
+
+    const handleNotificationBellClick = () => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const sessionReadIds = getSessionReadNotificationIds();
+
+        const notificationsToShow = allNotifications.filter(notif => {
+            const notificationDate = new Date(notif.date);
+            notificationDate.setHours(0, 0, 0, 0);
+            return !notif.read && notificationDate <= today && !sessionReadIds.includes(notif.id);
+        });
+
+        if (notificationsToShow.length > 0) {
+            notificationsToShow.forEach(notif => {
+                showToast(notif.message, 'notification', `Notifikasi (${new Date(notif.date).toLocaleDateString('id-ID')})`);
+                addSessionReadNotificationId(notif.id); 
+            });
+        } else {
+            showToast('Tidak ada notifikasi baru saat ini.', 'info');
+        }
+        
+        updateNotificationBadge(); 
+    };
+
+    // --- Inisialisasi dan Event Listener Utama ---
+    const init = async () => {
+        setupEventListeners();
+        initTheme();
+        initSideNav();
+        initModal();
+        await loadNotifications(); 
+        
+        try {
+            const response = await fetch('/src/settings.json');
+            if (!response.ok) throw new Error(`Gagal memuat pengaturan: ${response.status}`);
+            settings = await response.json();
+            populatePageContent();
+            renderApiCategories();
+            observeApiItems();
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            showToast(`Gagal memuat pengaturan: ${error.message}`, 'error');
+            displayErrorState("Tidak dapat memuat konfigurasi API.");
+        } finally {
+            hideLoadingScreen();
+        }
+    };
+
+    const setupEventListeners = () => {
+        if (DOM.navCollapseBtn) DOM.navCollapseBtn.addEventListener('click', toggleSideNavCollapse);
+        if (DOM.menuToggle) DOM.menuToggle.addEventListener('click', toggleSideNavMobile);
+        if (DOM.themeToggle) DOM.themeToggle.addEventListener('change', handleThemeToggle);
+        if (DOM.searchInput) DOM.searchInput.addEventListener('input', debounce(handleSearch, 300));
+        if (DOM.clearSearchBtn) DOM.clearSearchBtn.addEventListener('click', clearSearch);
+        
+        if (DOM.notificationBell) DOM.notificationBell.addEventListener('click', handleNotificationBellClick);
+
+        if (DOM.apiContent) DOM.apiContent.addEventListener('click', handleApiGetButtonClick);
+
+        if (DOM.modal.copyEndpointBtn) DOM.modal.copyEndpointBtn.addEventListener('click', () => copyToClipboard(DOM.modal.endpoint.textContent, DOM.modal.copyEndpointBtn));
+        if (DOM.modal.copyResponseBtn) DOM.modal.copyResponseBtn.addEventListener('click', () => copyToClipboard(DOM.modal.content.textContent, DOM.modal.copyResponseBtn));
+        if (DOM.modal.submitBtn) DOM.modal.submitBtn.addEventListener('click', handleSubmitQuery);
+
+        window.addEventListener('scroll', handleScroll);
+        document.addEventListener('click', closeSideNavOnClickOutside);
+    };
+
+    // --- Manajemen Loading Screen ---
+    const hideLoadingScreen = () => {
+        if (!DOM.loadingScreen) return;
+        const loadingDots = DOM.loadingScreen.querySelector(".loading-dots");
+        if (loadingDots && loadingDots.intervalId) clearInterval(loadingDots.intervalId);
+
+        DOM.loadingScreen.classList.add('fade-out');
+        setTimeout(() => {
+            DOM.loadingScreen.style.display = "none";
+            DOM.body.classList.remove("no-scroll");
+        }, 500);
+    };
+    
+    const animateLoadingDots = () => {
+        const loadingDots = DOM.loadingScreen.querySelector(".loading-dots");
+        if (loadingDots) {
+            loadingDots.intervalId = setInterval(() => {
+                if (loadingDots.textContent.length >= 3) {
+                    loadingDots.textContent = '.';
+                } else {
+                    loadingDots.textContent += '.';
+                }
+            }, 500);
+        }
+    };
+    animateLoadingDots(); 
+
+    // --- Manajemen Tema ---
+    const initTheme = () => {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const savedTheme = localStorage.getItem('darkMode');
+        if (savedTheme === 'true' || (savedTheme === null && prefersDark)) {
+            DOM.body.classList.add('dark-mode');
+            if (DOM.themeToggle) DOM.themeToggle.checked = true;
         }
     };
 
     const handleThemeToggle = () => {
-        const newTheme = DOM.themeToggle.checked ? 'dark' : 'light';
-        applyTheme(newTheme);
+        DOM.body.classList.toggle('dark-mode');
+        const isDarkMode = DOM.body.classList.contains('dark-mode');
+        localStorage.setItem('darkMode', isDarkMode);
+        showToast(`Beralih ke mode ${isDarkMode ? 'gelap' : 'terang'}`, 'success');
     };
 
-    // ---------- Side Nav ----------
+    // --- Manajemen Navigasi Samping ---
+    const initSideNav = () => {
+        if (DOM.sideNav && DOM.navCollapseBtn) {
+             const isCollapsed = DOM.sideNav.classList.contains('collapsed');
+             DOM.navCollapseBtn.setAttribute('aria-expanded', !isCollapsed);
+        }
+    };
+    
     const toggleSideNavCollapse = () => {
         if (!DOM.sideNav || !DOM.mainWrapper || !DOM.navCollapseBtn) return;
-
-        const isCollapsed = DOM.sideNav.classList.toggle('collapsed');
-        DOM.mainWrapper.classList.toggle('expanded');
-
-        const collapseIcon = DOM.navCollapseBtn.querySelector('i');
-        if (collapseIcon) {
-            collapseIcon.classList.toggle('fa-angle-left', !isCollapsed);
-            collapseIcon.classList.toggle('fa-angle-right', isCollapsed);
-        }
-
-        localStorage.setItem('sideNavCollapsed', isCollapsed ? 'true' : 'false');
+        DOM.sideNav.classList.toggle('collapsed');
+        DOM.mainWrapper.classList.toggle('nav-collapsed');
+        const isExpanded = !DOM.sideNav.classList.contains('collapsed');
+        DOM.navCollapseBtn.setAttribute('aria-expanded', isExpanded);
     };
 
     const toggleSideNavMobile = () => {
-        if (!DOM.sideNav) return;
-
-        const isOpen = DOM.sideNav.classList.toggle('open');
-        DOM.body.classList.toggle('no-scroll', isOpen);
-
-        if (isOpen) {
-            originalBodyPaddingRight = DOM.body.style.paddingRight;
-            const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
-            DOM.body.style.paddingRight = `${scrollBarWidth}px`;
-        } else {
-            DOM.body.style.paddingRight = originalBodyPaddingRight || '';
-        }
+        if (!DOM.sideNav || !DOM.menuToggle) return;
+        DOM.sideNav.classList.toggle('active');
+        const isActive = DOM.sideNav.classList.contains('active');
+        DOM.menuToggle.setAttribute('aria-expanded', isActive);
     };
 
-    const initSideNavCollapsedState = () => {
-        if (!DOM.sideNav || !DOM.mainWrapper || !DOM.navCollapseBtn) return;
-
-        const isCollapsed = localStorage.getItem('sideNavCollapsed') === 'true';
-        if (isCollapsed) {
-            DOM.sideNav.classList.add('collapsed');
-            DOM.mainWrapper.classList.add('expanded');
-
-            const collapseIcon = DOM.navCollapseBtn.querySelector('i');
-            if (collapseIcon) {
-                collapseIcon.classList.remove('fa-angle-left');
-                collapseIcon.classList.add('fa-angle-right');
-            }
+    const closeSideNavOnClickOutside = (e) => {
+        if (!DOM.sideNav || !DOM.menuToggle) return;
+        if (window.innerWidth < 992 &&
+            !DOM.sideNav.contains(e.target) &&
+            !DOM.menuToggle.contains(e.target) &&
+            DOM.sideNav.classList.contains('active')) {
+            DOM.sideNav.classList.remove('active');
+            DOM.menuToggle.setAttribute('aria-expanded', 'false');
         }
     };
-
-    const closeSideNavIfOpenOnMobile = () => {
-        if (!DOM.sideNav) return;
-
-        if (DOM.sideNav.classList.contains('open')) {
-            DOM.sideNav.classList.remove('open');
-            DOM.body.classList.remove('no-scroll');
-            DOM.body.style.paddingRight = originalBodyPaddingRight || '';
-        }
-    };
-
-    const initSideNav = () => {
-        initSideNavCollapsedState();
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 992) closeSideNavIfOpenOnMobile();
-        });
-
-        document.addEventListener('click', (event) => {
-            if (window.innerWidth > 992) return;
-            if (!DOM.sideNav.classList.contains('open')) return;
-            if (!DOM.sideNav.contains(event.target) && !DOM.menuToggle.contains(event.target)) {
-                closeSideNavIfOpenOnMobile();
+    
+    const handleScroll = () => {
+        const scrollPosition = window.scrollY;
+        const headerElement = document.querySelector('.main-header'); 
+        const headerHeight = headerElement ? parseInt(getComputedStyle(headerElement).height) : 70; 
+        
+        document.querySelectorAll('section[id]').forEach(section => {
+            const sectionTop = section.offsetTop - headerHeight - 20; 
+            const sectionHeight = section.offsetHeight;
+            const sectionId = section.getAttribute('id');
+            
+            const navLink = document.querySelector(`.side-nav-link[href="#${sectionId}"]`);
+            if (navLink) {
+                if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                    document.querySelectorAll('.side-nav-link.active').forEach(l => {
+                        l.classList.remove('active');
+                        l.removeAttribute('aria-current');
+                    });
+                    navLink.classList.add('active');
+                    navLink.setAttribute('aria-current', 'page');
+                }
             }
         });
     };
 
-    // ---------- Search ----------
-    const filterApis = (query) => {
-        if (!DOM.apiContent || !settings.categories || !settings.categories.length) return;
-
-        const q = query.trim().toLowerCase();
-        const items = DOM.apiContent.querySelectorAll('.api-item');
-
-        if (!q) {
-            items.forEach(i => i.classList.remove('hidden'));
-            return;
+    // --- Inisialisasi Modal ---
+    const initModal = () => {
+        if (DOM.modal.element) {
+            DOM.modal.instance = new bootstrap.Modal(DOM.modal.element);
         }
-
-        items.forEach(item => {
-            const title = item.querySelector('.api-name')?.textContent.toLowerCase() || '';
-            const desc = item.querySelector('.api-description')?.textContent.toLowerCase() || '';
-            const methods = item.dataset.methods?.toLowerCase() || '';
-            const endpoint = item.dataset.endpoint?.toLowerCase() || '';
-
-            const match =
-                title.includes(q) ||
-                desc.includes(q) ||
-                methods.includes(q) ||
-                endpoint.includes(q);
-
-            item.classList.toggle('hidden', !match);
-        });
     };
 
-    const handleSearchInput = (event) => {
-        filterApis(event.target.value);
+    // --- Pengisian Konten Halaman ---
+    const setPageContent = (element, value, fallback = '') => {
+        if (element) element.textContent = value || fallback;
+    };
+    
+    const setPageAttribute = (element, attribute, value, fallback = '') => {
+        if (element) element.setAttribute(attribute, value || fallback);
     };
 
-    const clearSearch = () => {
-        if (!DOM.searchInput) return;
-        DOM.searchInput.value = '';
-        filterApis('');
-    };
-
-    // ---------- Branding & Banner ----------
     const populatePageContent = () => {
         if (!settings || Object.keys(settings).length === 0) return;
 
         const currentYear = new Date().getFullYear();
-        const creator = settings.apiSettings?.creator || 'Ada';
+        const creator = settings.apiSettings?.creator || 'FlowFalcon';
 
-        setPageContent(DOM.pageTitle, settings.name || 'Ada API', 'Ada API');
+        setPageContent(DOM.pageTitle, settings.name, "Falcon API");
         setPageContent(DOM.wm, `© ${currentYear} ${creator}. Semua hak dilindungi.`);
-        setPageContent(DOM.appName, settings.name || 'Ada API', 'Ada API');
-        setPageContent(DOM.sideNavName, settings.name || 'Ada API');
-        setPageContent(DOM.versionBadge, settings.version || 'v1.0', 'v1.0');
-        setPageContent(DOM.versionHeaderBadge, settings.header?.status || 'Online!', 'Online!');
-        setPageContent(
-            DOM.appDescription,
-            settings.description || 'Antarmuka dokumentasi Ada API yang simpel, modern, dan mudah disesuaikan.',
-            'Antarmuka dokumentasi Ada API yang simpel, modern, dan mudah disesuaikan.'
-        );
+        setPageContent(DOM.appName, settings.name, "Falcon API");
+        setPageContent(DOM.sideNavName, settings.name || "API");
+        setPageContent(DOM.versionBadge, settings.version, "v1.0");
+        setPageContent(DOM.versionHeaderBadge, settings.header?.status, "Aktif!");
+        setPageContent(DOM.appDescription, settings.description, "Dokumentasi API simpel dan mudah digunakan.");
 
-        // Banner GIF utama
+        // Mengatur gambar banner
         if (DOM.dynamicImage) {
-            const defaultGif = '/src/banner.gif';
-            const fallbackStatic = '/src/banner-fallback.jpg';
-
-            const bannerSrc = settings.bannerImage || defaultGif;
-
-            DOM.dynamicImage.src = bannerSrc;
-            DOM.dynamicImage.alt = settings.name
-                ? `${settings.name} Banner`
-                : 'Ada API Banner';
-            DOM.dynamicImage.style.display = '';
-            DOM.dynamicImage.style.opacity = '0';
-
-            let hasTriedFallback = false;
-
-            DOM.dynamicImage.onload = () => {
-                DOM.dynamicImage.classList.add('banner-loaded');
-                DOM.dynamicImage.style.opacity = '1';
-            };
-
-            DOM.dynamicImage.onerror = () => {
-                if (hasTriedFallback || !fallbackStatic) {
-                    DOM.dynamicImage.classList.add('banner-error');
-                    DOM.dynamicImage.style.opacity = '1';
-                    return;
-                }
-                hasTriedFallback = true;
-                DOM.dynamicImage.src = fallbackStatic;
-                DOM.dynamicImage.alt = 'Ada API Banner Fallback';
+            if (settings.bannerImage) {
+                DOM.dynamicImage.src = settings.bannerImage;
+                DOM.dynamicImage.alt = settings.name ? `${settings.name} Banner` : "API Banner";
+                DOM.dynamicImage.style.display = ''; // Pastikan gambar ditampilkan jika ada path
+            } else {
+                // Jika tidak ada bannerImage di settings, gunakan fallback default dan tampilkan
+                DOM.dynamicImage.src = '/src/banner.jpg'; 
+                DOM.dynamicImage.alt = "API Banner Default";
                 DOM.dynamicImage.style.display = '';
-                DOM.dynamicImage.style.opacity = '1';
-                showToast('Banner GIF gagal dimuat, menggunakan gambar cadangan.', 'warning');
+            }
+            DOM.dynamicImage.onerror = () => {
+                DOM.dynamicImage.src = '/src/banner.jpg'; // Fallback jika error loading
+                DOM.dynamicImage.alt = "API Banner Fallback";
+                DOM.dynamicImage.style.display = ''; // Pastikan tetap tampil
+                showToast('Gagal memuat gambar banner, menggunakan gambar default.', 'warning');
             };
         }
-
-        // Link hero
+        
         if (DOM.apiLinksContainer) {
-            DOM.apiLinksContainer.innerHTML = '';
-            const defaultLinks = [
-                {
-                    url: 'https://github.com/adamhasani/ada-api.git',
-                    name: 'Lihat di GitHub',
-                    icon: 'fab fa-github'
-                }
-            ];
+            DOM.apiLinksContainer.innerHTML = ''; 
+            const defaultLinks = [{ url: "https://github.com/FlowFalcon/Falcon-Api-UI", name: "Lihat di GitHub", icon: "fab fa-github" }];
             const linksToRender = settings.links?.length ? settings.links : defaultLinks;
 
             linksToRender.forEach(({ url, name, icon }, index) => {
@@ -326,14 +383,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 link.href = url;
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
-                link.className = 'api-link btn btn-primary';
+                link.className = 'api-link btn btn-primary'; 
                 link.style.animationDelay = `${index * 0.1}s`;
                 link.setAttribute('aria-label', name);
-
+                
                 const iconElement = document.createElement('i');
-                iconElement.className = icon || 'fas fa-external-link-alt';
+                iconElement.className = icon || 'fas fa-external-link-alt'; 
                 iconElement.setAttribute('aria-hidden', 'true');
-
+                
                 link.appendChild(iconElement);
                 link.appendChild(document.createTextNode(` ${name}`));
                 DOM.apiLinksContainer.appendChild(link);
@@ -341,401 +398,576 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    const initHeroBannerEffects = () => {
-        const banner = DOM.dynamicImage;
-        if (!banner) return;
-
-        const container = banner.closest('.banner-container');
-        if (!container) return;
-
-        banner.style.transition = 'transform 400ms ease, filter 400ms ease, opacity 400ms ease';
-        banner.style.transform = 'scale(1.02)';
-        container.style.perspective = '1200px';
-
-        const handleMove = (e) => {
-            const rect = container.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width - 0.5;
-            const y = (e.clientY - rect.top) / rect.height - 0.5;
-
-            const rotateX = y * -6;
-            const rotateY = x * 8;
-
-            banner.style.transform = `
-                scale(1.03)
-                rotateX(${rotateX}deg)
-                rotateY(${rotateY}deg)
-            `;
-            banner.style.filter = 'brightness(1.08)';
-        };
-
-        const handleLeave = () => {
-            banner.style.transform = 'scale(1.02) rotateX(0deg) rotateY(0deg)';
-            banner.style.filter = 'brightness(1)';
-        };
-
-        container.addEventListener('mousemove', handleMove);
-        container.addEventListener('mouseleave', handleLeave);
-    };
-
-    // ---------- Render Kategori & API ----------
+    // --- Render Kategori dan Item API ---
     const renderApiCategories = () => {
         if (!DOM.apiContent || !settings.categories || !settings.categories.length) {
-            displayErrorState('Tidak ada kategori API yang ditemukan.');
+            displayErrorState("Tidak ada kategori API yang ditemukan.");
             return;
         }
-
-        DOM.apiContent.innerHTML = '';
+        DOM.apiContent.innerHTML = ''; 
 
         settings.categories.forEach((category, categoryIndex) => {
-            const sortedItems = category.items.slice().sort((a, b) => a.name.localeCompare(b.name));
+            const sortedItems = category.items.sort((a, b) => a.name.localeCompare(b.name));
+            
+            const categorySection = document.createElement('section'); 
+            categorySection.id = `category-${category.name.toLowerCase().replace(/\s+/g, '-')}`;
+            categorySection.className = 'category-section';
+            categorySection.style.animationDelay = `${categoryIndex * 0.15}s`;
+            categorySection.setAttribute('aria-labelledby', `category-title-${categoryIndex}`);
+            
+            const categoryHeader = document.createElement('h3');
+            categoryHeader.id = `category-title-${categoryIndex}`;
+            categoryHeader.className = 'category-header';
+            
+            if (category.icon) { 
+                const iconEl = document.createElement('i');
+                iconEl.className = `${category.icon} me-2`;
+                iconEl.setAttribute('aria-hidden', 'true');
+                categoryHeader.appendChild(iconEl);
+            }
+            categoryHeader.appendChild(document.createTextNode(category.name));
+            categorySection.appendChild(categoryHeader);
+            
+            if (category.image) {
+                const img = document.createElement('img');
+                img.src = category.image;
+                img.alt = `${category.name} banner`;
+                img.className = 'category-image img-fluid rounded mb-3 shadow-sm'; 
+                img.loading = 'lazy'; 
+                categorySection.appendChild(img);
+            }
 
-            const section = document.createElement('section');
-            section.className = 'category-section';
-            section.style.animationDelay = `${categoryIndex * 0.15}s`;
-
-            const header = document.createElement('h3');
-            header.className = 'category-title';
-            header.textContent = category.name;
-
-            const desc = document.createElement('p');
-            desc.className = 'category-description';
-            desc.textContent = category.description || '';
-
-            const grid = document.createElement('div');
-            grid.className = 'api-grid';
-
+            const itemsRow = document.createElement('div');
+            itemsRow.className = 'row'; 
+            
             sortedItems.forEach((item, itemIndex) => {
-                const card = document.createElement('article');
-                card.className = 'api-item glass-card';
-                card.style.animationDelay = `${(categoryIndex * 0.15) + (itemIndex * 0.05)}s`;
-                card.setAttribute('tabindex', '0');
-                card.setAttribute('role', 'button');
-                card.setAttribute('aria-label', `Buka detail API ${item.name}`);
-                card.dataset.endpoint = item.endpoint;
-                card.dataset.methods = (item.methods || []).join(', ');
+                const itemCol = document.createElement('div');
+                itemCol.className = 'col-12 col-md-6 col-lg-4 api-item'; 
+                itemCol.dataset.name = item.name;
+                itemCol.dataset.desc = item.desc;
+                itemCol.dataset.category = category.name;
+                itemCol.style.animationDelay = `${itemIndex * 0.05 + 0.2}s`;
 
-                const methodBadges = (item.methods || []).map(method => {
-                    const cls =
-                        method === 'GET' ? 'badge-get' :
-                        method === 'POST' ? 'badge-post' :
-                        method === 'PUT' ? 'badge-put' :
-                        method === 'DELETE' ? 'badge-delete' :
-                        'badge-default';
-                    return `<span class="method-badge ${cls}">${method}</span>`;
-                }).join(' ');
+                const apiCard = document.createElement('article'); 
+                apiCard.className = 'api-card h-100'; 
+                apiCard.setAttribute('aria-labelledby', `api-title-${categoryIndex}-${itemIndex}`);
 
-                card.innerHTML = `
-                    <div class="api-header">
-                        <div class="api-title-group">
-                            <h4 class="api-name">${item.name}</h4>
-                            <div class="api-meta">
-                                ${item.authRequired
-                                    ? '<span class="badge-auth"><i class="fas fa-lock"></i> Auth</span>'
-                                    : '<span class="badge-no-auth"><i class="fas fa-unlock"></i> Publik</span>'}
-                                ${item.categoryLabel
-                                    ? `<span class="badge-category">${item.categoryLabel}</span>`
-                                    : ''}
-                            </div>
-                        </div>
-                        <div class="api-methods">
-                            ${methodBadges}
-                        </div>
-                    </div>
-                    <p class="api-description">${item.description || ''}</p>
-                    <div class="api-footer">
-                        <code class="api-endpoint-preview">${item.endpoint}</code>
-                        <button class="btn btn-sm btn-outline-light api-test-btn">
-                            <span>Uji</span>
-                            <i class="fas fa-play ms-2"></i>
-                        </button>
-                    </div>
-                `;
+                const cardInfo = document.createElement('div');
+                cardInfo.className = 'api-card-info';
 
-                const open = () => {
-                    currentApiData = item;
-                    openApiModal(item);
+                const itemTitle = document.createElement('h5');
+                itemTitle.id = `api-title-${categoryIndex}-${itemIndex}`;
+                itemTitle.className = 'mb-1'; 
+                itemTitle.textContent = item.name;
+                
+                const itemDesc = document.createElement('p');
+                itemDesc.className = 'text-muted mb-0';
+                itemDesc.textContent = item.desc;
+                
+                cardInfo.appendChild(itemTitle);
+                cardInfo.appendChild(itemDesc);
+                
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'api-actions mt-auto'; 
+                
+                const getBtn = document.createElement('button');
+                getBtn.type = 'button';
+                getBtn.className = 'btn get-api-btn btn-sm'; 
+                getBtn.innerHTML = '<i class="fas fa-code me-1" aria-hidden="true"></i> GET';
+                getBtn.dataset.apiPath = item.path;
+                getBtn.dataset.apiName = item.name;
+                getBtn.dataset.apiDesc = item.desc;
+                if (item.params) getBtn.dataset.apiParams = JSON.stringify(item.params);
+                if (item.innerDesc) getBtn.dataset.apiInnerDesc = item.innerDesc;
+                getBtn.setAttribute('aria-label', `Dapatkan detail untuk ${item.name}`);
+                
+                const status = item.status || "ready";
+                const statusConfig = {
+                    ready: { class: "status-ready", icon: "fa-circle", text: "Ready" },
+                    error: { class: "status-error", icon: "fa-exclamation-triangle", text: "Error" },
+                    update: { class: "status-update", icon: "fa-arrow-up", text: "Update" }
                 };
+                const currentStatus = statusConfig[status] || statusConfig.ready;
 
-                card.addEventListener('click', open);
-                card.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        open();
-                    }
-                });
+                if (status === 'error' || status === 'update') {
+                    getBtn.disabled = true;
+                    apiCard.classList.add('api-card-unavailable');
+                    getBtn.title = `API ini sedang dalam status '${status}', sementara tidak dapat digunakan.`;
+                }
 
-                grid.appendChild(card);
+                const statusIndicator = document.createElement('div');
+                statusIndicator.className = `api-status ${currentStatus.class}`;
+                statusIndicator.title = `Status: ${currentStatus.text}`;
+                statusIndicator.innerHTML = `<i class="fas ${currentStatus.icon} me-1" aria-hidden="true"></i><span>${currentStatus.text}</span>`;
+                
+                actionsDiv.appendChild(getBtn);
+                actionsDiv.appendChild(statusIndicator);
+                
+                apiCard.appendChild(cardInfo);
+                apiCard.appendChild(actionsDiv);
+                itemCol.appendChild(apiCard);
+                itemsRow.appendChild(itemCol); 
             });
-
-            section.appendChild(header);
-            section.appendChild(desc);
-            section.appendChild(grid);
-            DOM.apiContent.appendChild(section);
+            
+            categorySection.appendChild(itemsRow); 
+            DOM.apiContent.appendChild(categorySection);
         });
+        initializeTooltips(); 
     };
 
-    // ---------- Modal ----------
-    const initModal = () => {
-        if (!DOM.modal.element) return;
-        DOM.modal.instance = new bootstrap.Modal(DOM.modal.element, {
-            backdrop: 'static',
-            keyboard: true
+    const displayErrorState = (message) => {
+        if (!DOM.apiContent) return;
+        DOM.apiContent.innerHTML = `
+            <div class="no-results-message text-center p-5">
+                <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                <p class="h5">${message}</p>
+                <p class="text-muted">Silakan coba muat ulang halaman atau hubungi administrator.</p>
+                <button class="btn btn-primary mt-3" onclick="location.reload()">
+                    <i class="fas fa-sync-alt me-2"></i> Muat Ulang
+                </button>
+            </div>
+        `;
+    };
+    
+    // --- Fungsi Pencarian ---
+    const handleSearch = () => {
+        if (!DOM.searchInput || !DOM.apiContent) return;
+        const searchTerm = DOM.searchInput.value.toLowerCase().trim();
+        DOM.clearSearchBtn.classList.toggle('visible', searchTerm.length > 0);
+
+        const apiItems = DOM.apiContent.querySelectorAll('.api-item');
+        let visibleCategories = new Set();
+
+        apiItems.forEach(item => {
+            const name = (item.dataset.name || '').toLowerCase();
+            const desc = (item.dataset.desc || '').toLowerCase();
+            const category = (item.dataset.category || '').toLowerCase();
+            const matches = name.includes(searchTerm) || desc.includes(searchTerm) || category.includes(searchTerm);
+            
+            item.style.display = matches ? '' : 'none';
+            if (matches) {
+                visibleCategories.add(item.closest('.category-section'));
+            }
         });
 
-        DOM.modal.element.addEventListener('hidden.bs.modal', resetModal);
+        DOM.apiContent.querySelectorAll('.category-section').forEach(section => {
+            section.style.display = visibleCategories.has(section) ? '' : 'none';
+        });
 
-        if (DOM.modal.copyEndpointBtn) {
-            DOM.modal.copyEndpointBtn.addEventListener('click', () => {
-                const text = DOM.modal.endpoint.textContent.trim();
-                if (!text) return;
-                navigator.clipboard.writeText(text)
-                    .then(() => showToast('Endpoint disalin ke clipboard.', 'success'))
-                    .catch(() => showToast('Gagal menyalin endpoint.', 'error'));
-            });
-        }
-
-        if (DOM.modal.copyResponseBtn) {
-            DOM.modal.copyResponseBtn.addEventListener('click', () => {
-                const text = DOM.modal.responseContent.textContent.trim();
-                if (!text) return;
-                navigator.clipboard.writeText(text)
-                    .then(() => showToast('Respons disalin ke clipboard.', 'success'))
-                    .catch(() => showToast('Gagal menyalin respons.', 'error'));
-            });
-        }
-    };
-
-    const resetModal = () => {
-        DOM.modal.label.textContent = 'Nama API';
-        DOM.modal.desc.textContent = 'Deskripsi API.';
-        DOM.modal.endpoint.textContent = '';
-        DOM.modal.queryInputContainer.innerHTML = '';
-        DOM.modal.responseContent.textContent = '';
-        DOM.modal.responseContent.classList.add('d-none');
-        DOM.modal.responseContainer.classList.add('d-none');
-        DOM.modal.loadingIndicator.classList.add('d-none');
-        DOM.modal.submitBtn.disabled = true;
-        DOM.modal.submitBtn.innerHTML = `<span>Kirim</span><i class="fas fa-paper-plane ms-2" aria-hidden="true"></i>`;
-        DOM.modal.dialog.classList.remove('modal-error');
-    };
-
-    const openApiModal = (item) => {
-        if (!DOM.modal.instance) return;
-
-        currentApiData = item;
-
-        DOM.modal.label.textContent = item.name;
-        DOM.modal.desc.textContent = item.description || 'Tidak ada deskripsi.';
-        DOM.modal.endpoint.textContent = item.endpoint || '';
-
-        DOM.modal.queryInputContainer.innerHTML = '';
-
-        const params = item.parameters || {};
-        const keys = Object.keys(params);
-
-        if (keys.length > 0) {
-            keys.forEach((key) => {
-                const cfg = params[key];
-
-                const wrap = document.createElement('div');
-                wrap.className = 'mb-3';
-
-                const label = document.createElement('label');
-                label.className = 'form-label';
-                label.setAttribute('for', `param-${key}`);
-                label.textContent = `${key}${cfg.required ? ' *' : ''}`;
-
-                const input = document.createElement('input');
-                input.id = `param-${key}`;
-                input.className = 'form-control';
-                input.type = cfg.type === 'number' ? 'number' : 'text';
-                input.placeholder = cfg.placeholder || `Masukkan ${key}...`;
-                input.dataset.param = key;
-                input.required = !!cfg.required;
-
-                wrap.appendChild(label);
-                wrap.appendChild(input);
-                DOM.modal.queryInputContainer.appendChild(wrap);
-            });
-
-            DOM.modal.submitBtn.disabled = false;
+        const noResultsMsg = DOM.apiContent.querySelector('#noResultsMessage') || createNoResultsMessage();
+        const allHidden = Array.from(visibleCategories).length === 0 && searchTerm.length > 0;
+        
+        if (allHidden) {
+            noResultsMsg.querySelector('span').textContent = `"${searchTerm}"`;
+            noResultsMsg.style.display = 'flex';
         } else {
-            DOM.modal.queryInputContainer.innerHTML =
-                '<p class="text-muted mb-0">Endpoint ini tidak memerlukan parameter tambahan.</p>';
-            DOM.modal.submitBtn.disabled = false;
+            noResultsMsg.style.display = 'none';
         }
+    };
 
-        DOM.modal.responseContent.classList.add('d-none');
-        DOM.modal.responseContainer.classList.add('d-none');
-        DOM.modal.loadingIndicator.classList.add('d-none');
-        DOM.modal.dialog.classList.remove('modal-error');
-        DOM.modal.submitBtn.innerHTML = `<span>Kirim</span><i class="fas fa-paper-plane ms-2" aria-hidden="true"></i>`;
+    const clearSearch = () => {
+        if (!DOM.searchInput) return;
+        DOM.searchInput.value = '';
+        DOM.searchInput.focus();
+        handleSearch(); 
+        DOM.searchInput.classList.add('shake-animation');
+        setTimeout(() => DOM.searchInput.classList.remove('shake-animation'), 400);
+    };
 
+    const createNoResultsMessage = () => {
+        let noResultsMsg = document.getElementById('noResultsMessage');
+        if (!noResultsMsg) {
+            noResultsMsg = document.createElement('div');
+            noResultsMsg.id = 'noResultsMessage';
+            noResultsMsg.className = 'no-results-message flex-column align-items-center justify-content-center p-5 text-center';
+            noResultsMsg.style.display = 'none'; 
+            noResultsMsg.innerHTML = `
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <p class="h5">Tidak ada hasil untuk <span></span></p>
+                <button id="clearSearchFromMsg" class="btn btn-primary mt-3">
+                    <i class="fas fa-times me-2"></i> Hapus Pencarian
+                </button>
+            `;
+            DOM.apiContent.appendChild(noResultsMsg);
+            document.getElementById('clearSearchFromMsg').addEventListener('click', clearSearch);
+        }
+        return noResultsMsg;
+    };
+
+    // --- Penanganan Klik Tombol API ---
+    const handleApiGetButtonClick = (event) => {
+        const getApiBtn = event.target.closest('.get-api-btn');
+        if (!getApiBtn || getApiBtn.disabled) return; 
+
+        getApiBtn.classList.add('pulse-animation');
+        setTimeout(() => getApiBtn.classList.remove('pulse-animation'), 300);
+
+        currentApiData = {
+            path: getApiBtn.dataset.apiPath,
+            name: getApiBtn.dataset.apiName,
+            desc: getApiBtn.dataset.apiDesc,
+            params: getApiBtn.dataset.apiParams ? JSON.parse(getApiBtn.dataset.apiParams) : null,
+            innerDesc: getApiBtn.dataset.apiInnerDesc
+        };
+        
+        setupModalForApi(currentApiData);
         DOM.modal.instance.show();
     };
 
-    const buildQueryParams = () => {
-        const inputs = DOM.modal.queryInputContainer
-            ? DOM.modal.queryInputContainer.querySelectorAll('input[data-param]')
-            : [];
-        const params = [];
-        inputs.forEach(input => {
-            const key = input.dataset.param;
-            const val = input.value.trim();
-            if (val !== '') {
-                params.push(`${encodeURIComponent(key)}=${encodeURIComponent(val)}`);
+    const setupModalForApi = (apiData) => {
+        DOM.modal.label.textContent = apiData.name;
+        DOM.modal.desc.textContent = apiData.desc;
+        DOM.modal.content.innerHTML = ''; 
+        DOM.modal.endpoint.textContent = `${window.location.origin}${apiData.path.split('?')[0]}`; 
+        
+        DOM.modal.spinner.classList.add('d-none');
+        DOM.modal.content.classList.add('d-none');
+        DOM.modal.container.classList.add('d-none');
+        DOM.modal.endpoint.classList.remove('d-none'); 
+
+        DOM.modal.queryInputContainer.innerHTML = '';
+        DOM.modal.submitBtn.classList.add('d-none');
+        DOM.modal.submitBtn.disabled = true;
+        DOM.modal.submitBtn.innerHTML = '<span>Kirim</span><i class="fas fa-paper-plane ms-2" aria-hidden="true"></i>';
+
+        const paramsFromPath = new URLSearchParams(apiData.path.split('?')[1]);
+        const paramKeys = Array.from(paramsFromPath.keys());
+
+        if (paramKeys.length > 0) {
+            const paramContainer = document.createElement('div');
+            paramContainer.className = 'param-container';
+
+            const formTitle = document.createElement('h6');
+            formTitle.className = 'param-form-title';
+            formTitle.innerHTML = '<i class="fas fa-sliders-h me-2" aria-hidden="true"></i> Parameter';
+            paramContainer.appendChild(formTitle);
+
+            paramKeys.forEach(paramKey => {
+                const paramGroup = document.createElement('div');
+                paramGroup.className = 'param-group mb-3';
+
+                const labelContainer = document.createElement('div');
+                labelContainer.className = 'param-label-container';
+                
+                const label = document.createElement('label');
+                label.className = 'form-label';
+                label.textContent = paramKey;
+                label.htmlFor = `param-${paramKey}`;
+                
+                const requiredSpan = document.createElement('span');
+                requiredSpan.className = 'required-indicator ms-1';
+                requiredSpan.textContent = '*';
+                label.appendChild(requiredSpan);
+                labelContainer.appendChild(label);
+
+                if (apiData.params && apiData.params[paramKey]) {
+                    const tooltipIcon = document.createElement('i');
+                    tooltipIcon.className = 'fas fa-info-circle param-info ms-1';
+                    tooltipIcon.setAttribute('data-bs-toggle', 'tooltip');
+                    tooltipIcon.setAttribute('data-bs-placement', 'top');
+                    tooltipIcon.title = apiData.params[paramKey];
+                    labelContainer.appendChild(tooltipIcon);
+                }
+                paramGroup.appendChild(labelContainer);
+                
+                const inputContainer = document.createElement('div');
+                inputContainer.className = 'input-container';
+                const inputField = document.createElement('input');
+                inputField.type = 'text';
+                inputField.className = 'form-control custom-input';
+                inputField.id = `param-${paramKey}`;
+                inputField.placeholder = `Masukkan ${paramKey}...`;
+                inputField.dataset.param = paramKey;
+                inputField.required = true;
+                inputField.autocomplete = "off";
+                inputField.addEventListener('input', validateModalInputs);
+                inputContainer.appendChild(inputField);
+                paramGroup.appendChild(inputContainer);
+                paramContainer.appendChild(paramGroup);
+            });
+
+            if (apiData.innerDesc) {
+                const innerDescDiv = document.createElement('div');
+                innerDescDiv.className = 'inner-desc mt-3';
+                innerDescDiv.innerHTML = `<i class="fas fa-info-circle me-2" aria-hidden="true"></i> ${apiData.innerDesc.replace(/\n/g, '<br>')}`;
+                paramContainer.appendChild(innerDescDiv);
             }
+
+            DOM.modal.queryInputContainer.appendChild(paramContainer);
+            DOM.modal.submitBtn.classList.remove('d-none');
+            initializeTooltips(DOM.modal.queryInputContainer); 
+        } else {
+            handleApiRequest(`${window.location.origin}${apiData.path}`, apiData.name);
+        }
+    };
+    
+    const validateModalInputs = () => {
+        const inputs = DOM.modal.queryInputContainer.querySelectorAll('input[required]');
+        const allFilled = Array.from(inputs).every(input => input.value.trim() !== '');
+        DOM.modal.submitBtn.disabled = !allFilled;
+        DOM.modal.submitBtn.classList.toggle('btn-active', allFilled);
+
+        inputs.forEach(input => {
+            if (input.value.trim()) input.classList.remove('is-invalid');
         });
-        return params.length ? `?${params.join('&')}` : '';
+        const errorMsg = DOM.modal.queryInputContainer.querySelector('.alert.alert-danger.fade-in');
+        if (errorMsg && allFilled) {
+             errorMsg.classList.replace('fade-in', 'fade-out');
+             setTimeout(() => errorMsg.remove(), 300);
+        }
     };
 
-    const handleSubmitApiRequest = async () => {
+    const handleSubmitQuery = async () => {
         if (!currentApiData) return;
 
-        try {
-            DOM.modal.dialog.classList.remove('modal-error');
-            DOM.modal.responseContent.classList.add('d-none');
-            DOM.modal.responseContainer.classList.add('d-none');
+        const inputs = DOM.modal.queryInputContainer.querySelectorAll('input');
+        const newParams = new URLSearchParams();
+        let isValid = true;
 
-            DOM.modal.loadingIndicator.classList.remove('d-none');
-            DOM.modal.submitBtn.disabled = true;
-            DOM.modal.submitBtn.innerHTML = `
-                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Memproses...`;
-
-            const queryParams = buildQueryParams();
-            const url = `${window.location.origin}${currentApiData.endpoint}${queryParams}`;
-
-            const options = {
-                method: currentApiData.methods?.[0] || 'GET',
-                headers: {}
-            };
-
-            if (currentApiData.requiresAuth && currentApiData.authToken) {
-                options.headers['Authorization'] = `Bearer ${currentApiData.authToken}`;
-            }
-
-            const response = await fetch(url, options);
-            const contentType = response.headers.get('Content-Type') || '';
-
-            if (contentType.includes('application/json')) {
-                const json = await response.json();
-                DOM.modal.responseContent.textContent = JSON.stringify(json, null, 2);
+        inputs.forEach(input => {
+            if (input.required && !input.value.trim()) {
+                isValid = false;
+                input.classList.add('is-invalid');
+                input.parentElement.classList.add('shake-animation');
+                setTimeout(() => input.parentElement.classList.remove('shake-animation'), 500);
             } else {
-                const text = await response.text();
-                DOM.modal.responseContent.textContent = text || '(respons kosong)';
+                input.classList.remove('is-invalid');
+                if (input.value.trim()) newParams.append(input.dataset.param, input.value.trim());
             }
+        });
 
-            DOM.modal.responseContent.classList.remove('d-none');
-            DOM.modal.responseContainer.classList.remove('d-none');
-            showToast('Permintaan API berhasil diproses.', 'success');
-        } catch (err) {
-            console.error('API error:', err);
-            DOM.modal.responseContent.textContent = `Terjadi kesalahan: ${err.message}`;
-            DOM.modal.responseContent.classList.remove('d-none');
-            DOM.modal.responseContainer.classList.remove('d-none');
-            DOM.modal.dialog.classList.add('modal-error');
-            showToast('Terjadi kesalahan saat memproses permintaan API.', 'error');
-        } finally {
-            DOM.modal.loadingIndicator.classList.add('d-none');
-            DOM.modal.submitBtn.disabled = false;
-            DOM.modal.submitBtn.innerHTML = `<span>Kirim</span><i class="fas fa-paper-plane ms-2" aria-hidden="true"></i>`;
-        }
-    };
+        if (!isValid) {
+            let errorMsg = DOM.modal.queryInputContainer.querySelector('.alert.alert-danger');
+            if (!errorMsg) {
+                errorMsg = document.createElement('div');
+                errorMsg.className = 'alert alert-danger mt-3';
+                errorMsg.setAttribute('role', 'alert');
+                DOM.modal.queryInputContainer.appendChild(errorMsg);
+            }
+            errorMsg.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> Harap isi semua kolom yang wajib diisi.';
+            errorMsg.classList.remove('fade-out');
+            errorMsg.classList.add('fade-in');
 
-    // ---------- Notifications ----------
-    const updateNotificationBadge = () => {
-        if (!DOM.notificationBadge) return;
-
-        if (newNotificationsCount > 0) {
-            DOM.notificationBadge.textContent = newNotificationsCount;
-            DOM.notificationBadge.style.display = 'inline-block';
-        } else {
-            DOM.notificationBadge.textContent = '';
-            DOM.notificationBadge.style.display = 'none';
-        }
-    };
-
-    const loadNotifications = async () => {
-        try {
-            const res = await fetch('/src/notifications.json');
-            if (!res.ok) throw new Error(`Gagal memuat notifikasi: ${res.status}`);
-            const data = await res.json();
-            notificationData = data.notifications || [];
-            newNotificationsCount = notificationData.filter(n => !n.read).length;
-            updateNotificationBadge();
-        } catch (err) {
-            console.error('Error load notifications:', err);
-        }
-    };
-
-    const showLatestNotification = () => {
-        if (!notificationData.length) {
-            showToast('Belum ada notifikasi.', 'info');
+            DOM.modal.submitBtn.classList.add('shake-animation');
+            setTimeout(() => DOM.modal.submitBtn.classList.remove('shake-animation'), 500);
             return;
         }
-        const latest = notificationData[0];
-        showToast(latest.message || 'Notifikasi baru.', latest.type || 'info');
-        latest.read = true;
-        newNotificationsCount = notificationData.filter(n => !n.read).length;
-        updateNotificationBadge();
+        
+        DOM.modal.submitBtn.disabled = true;
+        DOM.modal.submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Memproses...';
+
+        const apiUrlWithParams = `${window.location.origin}${currentApiData.path.split('?')[0]}?${newParams.toString()}`;
+        DOM.modal.endpoint.textContent = apiUrlWithParams; 
+
+        if (DOM.modal.queryInputContainer.firstChild) {
+            DOM.modal.queryInputContainer.firstChild.classList.add('fade-out');
+            setTimeout(() => {
+                 if (DOM.modal.queryInputContainer.firstChild) DOM.modal.queryInputContainer.firstChild.style.display = 'none';
+            }, 300);
+        }
+        
+        await handleApiRequest(apiUrlWithParams, currentApiData.name);
     };
 
-    // ---------- Observer ----------
-    const observeApiItems = () => {
-        if (!DOM.apiContent) return;
-        const items = DOM.apiContent.querySelectorAll('.api-item');
-        if (!items.length) return;
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(e => {
-                if (e.isIntersecting) e.target.classList.add('visible');
-            });
-        }, {
-            threshold: 0.1
-        });
-
-        items.forEach(i => observer.observe(i));
-    };
-
-    // ---------- Init & Events ----------
-    const setupEventListeners = () => {
-        if (DOM.navCollapseBtn) DOM.navCollapseBtn.addEventListener('click', toggleSideNavCollapse);
-        if (DOM.menuToggle) DOM.menuToggle.addEventListener('click', toggleSideNavMobile);
-        if (DOM.themeToggle) DOM.themeToggle.addEventListener('change', handleThemeToggle);
-        if (DOM.searchInput) DOM.searchInput.addEventListener('input', debounce(handleSearchInput, 200));
-        if (DOM.clearSearchBtn) DOM.clearSearchBtn.addEventListener('click', clearSearch);
-        if (DOM.notificationBell) DOM.notificationBell.addEventListener('click', () => {
-            showLatestNotification();
-            newNotificationsCount = 0;
-            updateNotificationBadge();
-        });
-        if (DOM.modal.submitBtn) DOM.modal.submitBtn.addEventListener('click', handleSubmitApiRequest);
-    };
-
-    const init = async () => {
-        setupEventListeners();
-        initTheme();
-        initSideNav();
-        initModal();
-        await loadNotifications();
+    const handleApiRequest = async (apiUrl, apiName) => {
+        DOM.modal.spinner.classList.remove('d-none');
+        DOM.modal.container.classList.add('d-none');
+        DOM.modal.content.innerHTML = ''; 
 
         try {
-            const res = await fetch('/src/settings.json');
-            if (!res.ok) throw new Error(`Gagal memuat pengaturan: ${res.status}`);
-            settings = await res.json();
-            populatePageContent();
-            initHeroBannerEffects();
-            renderApiCategories();
-            observeApiItems();
-        } catch (err) {
-            console.error('Error load settings:', err);
-            showToast(`Gagal memuat pengaturan: ${err.message}`, 'error');
-            displayErrorState('Tidak dapat memuat konfigurasi API.');
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 20000); 
+
+            const response = await fetch(apiUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                 const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                 throw new Error(`HTTP error! Status: ${response.status} - ${errorData.message || response.statusText}`);
+            }
+
+            const contentType = response.headers.get('Content-Type');
+            if (contentType && contentType.includes('image/')) {
+                const blob = await response.blob();
+                const imageUrl = URL.createObjectURL(blob);
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = apiName;
+                img.className = 'response-image img-fluid rounded shadow-sm fade-in';
+                
+                const downloadBtn = document.createElement('a'); 
+                downloadBtn.href = imageUrl;
+                downloadBtn.download = `${apiName.toLowerCase().replace(/\s+/g, '-')}.${blob.type.split('/')[1] || 'png'}`;
+                downloadBtn.className = 'btn btn-primary mt-3 w-100';
+                downloadBtn.innerHTML = '<i class="fas fa-download me-2"></i> Unduh Gambar';
+                
+                DOM.modal.content.appendChild(img);
+                DOM.modal.content.appendChild(downloadBtn);
+
+            } else if (contentType && contentType.includes('application/json')) {
+                const data = await response.json();
+                const formattedJson = syntaxHighlightJson(JSON.stringify(data, null, 2));
+                DOM.modal.content.innerHTML = formattedJson;
+                if (JSON.stringify(data, null, 2).split('\n').length > 20) { 
+                    addCodeFolding(DOM.modal.content);
+                }
+            } else {
+                const textData = await response.text();
+                DOM.modal.content.textContent = textData || "Respons tidak memiliki konten atau format tidak dikenal.";
+            }
+
+            DOM.modal.container.classList.remove('d-none');
+            DOM.modal.content.classList.remove('d-none');
+            DOM.modal.container.classList.add('slide-in-bottom');
+            showToast(`Berhasil mengambil data untuk ${apiName}`, 'success');
+
+        } catch (error) {
+            console.error("API Request Error:", error);
+            const errorHtml = `
+                <div class="error-container text-center p-3">
+                    <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                    <h6 class="text-danger">Terjadi Kesalahan</h6>
+                    <p class="text-muted small">${error.message || 'Tidak dapat mengambil data dari server.'}</p>
+                    ${currentApiData && currentApiData.path.split('?')[1] ? 
+                    `<button class="btn btn-sm btn-outline-primary mt-2 retry-query-btn">
+                        <i class="fas fa-sync-alt me-1"></i> Coba Lagi
+                    </button>` : ''}
+                </div>`;
+            DOM.modal.content.innerHTML = errorHtml;
+            DOM.modal.container.classList.remove('d-none');
+            DOM.modal.content.classList.remove('d-none');
+            showToast('Gagal mengambil data. Periksa detail di modal.', 'error');
+
+            const retryBtn = DOM.modal.content.querySelector('.retry-query-btn');
+            if (retryBtn) {
+                retryBtn.onclick = () => {
+                    if (DOM.modal.queryInputContainer.firstChild) {
+                         DOM.modal.queryInputContainer.firstChild.style.display = '';
+                         DOM.modal.queryInputContainer.firstChild.classList.remove('fade-out');
+                    }
+                    DOM.modal.submitBtn.disabled = false; 
+                    DOM.modal.submitBtn.innerHTML = '<span>Kirim</span><i class="fas fa-paper-plane ms-2" aria-hidden="true"></i>';
+                    DOM.modal.container.classList.add('d-none'); 
+                };
+            }
+
         } finally {
-            hideLoadingScreen();
+            DOM.modal.spinner.classList.add('d-none');
+            if (DOM.modal.submitBtn) { 
+                const hasParams = currentApiData && currentApiData.path && currentApiData.path.includes('?');
+                const hasError = DOM.modal.content.querySelector('.error-container');
+                const hasRetryButton = DOM.modal.content.querySelector('.retry-query-btn');
+
+                if (!hasParams || (hasError && !hasRetryButton)) {
+                    DOM.modal.submitBtn.disabled = !hasParams; 
+                    DOM.modal.submitBtn.innerHTML = '<span>Kirim</span><i class="fas fa-paper-plane ms-2" aria-hidden="true"></i>';
+                }
+             }
         }
     };
+    
+    // --- Fungsi Pembantu untuk Tampilan Kode ---
+    const syntaxHighlightJson = (json) => {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+            let cls = 'json-number';
+            if (/^"/.test(match)) {
+                cls = /:$/.test(match) ? 'json-key' : 'json-string';
+            } else if (/true|false/.test(match)) {
+                cls = 'json-boolean';
+            } else if (/null/.test(match)) {
+                cls = 'json-null';
+            }
+            return `<span class="${cls}">${match}</span>`;
+        });
+    };
 
-    showLoadingScreen();
-    await init();
+    const addCodeFolding = (container) => {
+        const lines = container.innerHTML.split('\n');
+        let currentLevel = 0;
+        let foldableHtml = '';
+        let inFoldableBlock = false;
+
+        lines.forEach((line, index) => {
+            const trimmedLine = line.trim();
+            if (trimmedLine.endsWith('{') || trimmedLine.endsWith('[')) {
+                if (currentLevel === 0) { 
+                    foldableHtml += `<div class="code-fold-trigger" data-folded="false" role="button" tabindex="0" aria-expanded="true">${line}<span class="fold-indicator ms-2 small text-muted">(<i class="fas fa-chevron-down"></i> Lipat)</span></div><div class="code-fold-content">`;
+                    inFoldableBlock = true;
+                } else {
+                    foldableHtml += line + '\n';
+                }
+                currentLevel++;
+            } else if (trimmedLine.startsWith('}') || trimmedLine.startsWith(']')) {
+                currentLevel--;
+                foldableHtml += line + '\n';
+                if (currentLevel === 0 && inFoldableBlock) {
+                    foldableHtml += '</div>';
+                    inFoldableBlock = false;
+                }
+            } else {
+                foldableHtml += line + (index === lines.length - 1 ? '' : '\n');
+            }
+        });
+        container.innerHTML = foldableHtml;
+
+        container.querySelectorAll('.code-fold-trigger').forEach(trigger => {
+            trigger.addEventListener('click', () => toggleFold(trigger));
+            trigger.addEventListener('keydown', (e) => { 
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleFold(trigger);
+                }
+            });
+        });
+    };
+
+    const toggleFold = (trigger) => {
+        const content = trigger.nextElementSibling;
+        const isFolded = trigger.dataset.folded === 'true';
+        const indicator = trigger.querySelector('.fold-indicator');
+
+        if (isFolded) { 
+            content.style.maxHeight = content.scrollHeight + "px";
+            trigger.dataset.folded = "false";
+            trigger.setAttribute('aria-expanded', 'true');
+            indicator.innerHTML = '(<i class="fas fa-chevron-up"></i> Tutup)';
+        } else { 
+            content.style.maxHeight = "0px";
+            trigger.dataset.folded = "true";
+            trigger.setAttribute('aria-expanded', 'false');
+            indicator.innerHTML = '(<i class="fas fa-chevron-down"></i> Buka)';
+        }
+    };
+    
+    // --- Observasi Item API untuk Animasi ---
+    const observeApiItems = () => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view', 'slideInUp'); 
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.api-item:not(.in-view)').forEach(item => {
+            observer.observe(item);
+        });
+    };
+
+    // --- Inisialisasi Tooltip ---
+    const initializeTooltips = (parentElement = document) => {
+        const tooltipTriggerList = [].slice.call(parentElement.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(tooltipTriggerEl => {
+            const existingTooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+            if (existingTooltip) {
+                existingTooltip.dispose();
+            }
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    };
+
+    // Jalankan inisialisasi utama
+    init();
 });
