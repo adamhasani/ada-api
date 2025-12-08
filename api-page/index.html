@@ -63,10 +63,10 @@
             padding: 1.2rem;
             background: linear-gradient(
                 180deg,
-                rgba(10, 24, 19, 0.55),
-                rgba(5, 12, 9, 0.35)
+                rgba(10, 24, 19, 0.72),
+                rgba(5, 12, 9, 0.6)
             );
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid rgba(255, 255, 255, 0.16);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             display: flex;
@@ -74,6 +74,7 @@
             z-index: 1040;
             transform: translateX(0);
             transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+            box-shadow: 12px 0 26px rgba(0,0,0,0.45);
         }
 
         .logo-frame {
@@ -82,10 +83,10 @@
             padding: 6px;
             border-radius: 14px;
             background: radial-gradient(circle at 30% 20%, #1a2f27, #08140f);
-            border: 1px solid rgba(214, 193, 140, 0.85);
+            border: 1px solid rgba(214, 193, 140, 0.95);
             box-shadow:
-                inset 0 0 10px rgba(255,255,255,0.07),
-                0 0 0 2px rgba(214, 193, 140, 0.25);
+                inset 0 0 10px rgba(255,255,255,0.12),
+                0 0 0 2px rgba(214, 193, 140, 0.4);
         }
 
         .logo-img {
@@ -100,27 +101,27 @@
             font-size: 1.1rem;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: #f4efe3;
+            color: #fff7e5;
         }
 
         .brand-subtext {
             font-size: 0.75rem;
             letter-spacing: 0.18em;
             text-transform: uppercase;
-            color: rgba(244,239,227,0.55);
+            color: rgba(247, 236, 208, 0.78);
         }
 
         .side-nav-links {
             margin-top: 2rem;
             padding: 0.9rem;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(214,193,140,0.35);
+            background: rgba(5, 10, 8, 0.75);
+            border: 1px solid rgba(214,193,140,0.55);
             border-radius: 22px;
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
             box-shadow:
-                0 18px 32px rgba(0,0,0,0.35),
-                inset 0 0 0 1px rgba(255,255,255,0.05);
+                0 18px 32px rgba(0,0,0,0.45),
+                inset 0 0 0 1px rgba(255,255,255,0.08);
         }
 
         .side-nav-link {
@@ -130,37 +131,37 @@
             padding: 0.55rem 1rem;
             margin-bottom: 0.2rem;
             border-radius: 999px;
-            color: rgba(244,239,227,0.9);
+            color: #fdf6e6;
             font-size: 0.93rem;
             transition: 0.18s ease;
         }
 
         .side-nav-link i {
             font-size: 0.95rem;
-            opacity: 0.9;
+            opacity: 0.95;
         }
 
         .side-nav-link:hover {
-            background: rgba(240,225,195,0.28);
+            background: rgba(240,225,195,0.32);
             color: #ffffff;
             transform: translateX(4px);
-            box-shadow: 0 0 14px rgba(240,225,195,0.4);
+            box-shadow: 0 0 14px rgba(240,225,195,0.55);
         }
 
         .side-nav-link.active {
-            background: rgba(240,225,195,0.36);
-            color: #ffffff;
+            background: rgba(240,225,195,0.4);
+            color: #111;
             font-weight: 500;
-            box-shadow: 0 0 18px rgba(240,225,195,0.5);
+            box-shadow: 0 0 18px rgba(240,225,195,0.7);
         }
 
         .nav-collapse-btn {
             margin-top: auto;
             padding: 0.55rem 0;
             border-radius: 999px;
-            border: 1px solid rgba(214,193,140,0.45);
-            background: rgba(12,24,18,0.65);
-            color: #e8dcc3;
+            border: 1px solid rgba(214,193,140,0.75);
+            background: rgba(12,24,18,0.95);
+            color: #f3e4c3;
             cursor: pointer;
         }
 
@@ -199,8 +200,8 @@
 
         .main-header {
             padding-block: 0.85rem;
-            background: rgba(245,241,232,0.88);
-            border-bottom: 1px solid rgba(27,38,32,0.07);
+            background: rgba(245,241,232,0.94);
+            border-bottom: 1px solid rgba(27,38,32,0.09);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             display: flex;
@@ -222,7 +223,7 @@
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.22em;
-            color: #5c5a52;
+            color: #4a4840;
             white-space: nowrap;
         }
 
@@ -247,8 +248,8 @@
             max-width: 360px;
             border-radius: 999px;
             padding: 0.15rem 0.6rem;
-            background: rgba(255,255,255,0.9);
-            border: 1px solid rgba(27,38,32,0.14);
+            background: rgba(255,255,255,0.96);
+            border: 1px solid rgba(27,38,32,0.16);
             box-shadow: 0 8px 18px rgba(0,0,0,0.08);
         }
 
@@ -283,7 +284,6 @@
             color: #6b6658;
         }
 
-        /* focus glow search (butuh browser yang support :has) */
         .search-input-group:has(#searchInput:focus) {
             box-shadow:
                 0 8px 20px rgba(0,0,0,0.16),
@@ -352,8 +352,6 @@
             line-height: 1.7;
             color: #4b4b44;
         }
-
-        /* THEME TOGGLE DI HERO */
 
         .hero-top-row {
             display: flex;
@@ -493,8 +491,6 @@
             filter: saturate(0.92);
         }
 
-        /* SERVICE STATUS DI BAWAH GIF */
-
         .banner-overlay-card {
             margin-top: 0.85rem;
             position: relative;
@@ -575,8 +571,6 @@
             max-width: 40rem;
         }
 
-        /* FILTER CHIPS */
-
         .api-filters {
             display: flex;
             flex-wrap: wrap;
@@ -589,15 +583,18 @@
             border-radius: 999px;
             padding: 0.25rem 0.9rem;
             font-size: 0.78rem;
-            border: 1px solid rgba(27,38,32,0.18);
-            background: rgba(255,255,255,0.85);
+            border: 1px solid rgba(27,38,32,0.24);
+            background: rgba(255,255,255,0.98);
             cursor: pointer;
             transition: 0.16s ease;
+            color: #38352c;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
         }
 
         .filter-chip.active {
             background: rgba(184,155,87,0.2);
-            border-color: rgba(184,155,87,0.7);
+            border-color: rgba(184,155,87,0.8);
+            color: #2f2414;
         }
 
         #apiContent {
@@ -608,17 +605,15 @@
             min-height: 80px;
             font-size: 0.9rem;
             color: #7a766a;
-            background: rgba(255,255,255,0.75);
+            background: rgba(255,255,255,0.9);
             box-shadow: 0 10px 24px rgba(0,0,0,0.12);
         }
-
-        /* API CARD + HTTP BADGE */
 
         .api-card {
             border-radius: 16px;
             padding: 1rem 1.2rem;
-            background: rgba(255,255,255,0.9);
-            border: 1px solid rgba(27,38,32,0.12);
+            background: rgba(255,255,255,0.96);
+            border: 1px solid rgba(27,38,32,0.16);
             box-shadow: 0 10px 24px rgba(0,0,0,0.08);
             transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
             margin-bottom: 0.8rem;
@@ -640,6 +635,7 @@
         .api-card-title {
             font-size: 0.95rem;
             font-weight: 500;
+            color: #262520;
         }
 
         .api-card-desc {
@@ -657,10 +653,10 @@
             white-space: nowrap;
         }
 
-        .http-get { background: rgba(88, 156, 110, 0.14); color: #355c3f; }
-        .http-post { background: rgba(158, 130, 89, 0.14); color: #6a5031; }
-        .http-put { background: rgba(102, 132, 173, 0.16); color: #304265; }
-        .http-delete { background: rgba(163, 74, 74, 0.18); color: #7b3131; }
+        .http-get { background: rgba(88, 156, 110, 0.18); color: #26402d; }
+        .http-post { background: rgba(158, 130, 89, 0.18); color: #4e361e; }
+        .http-put { background: rgba(102, 132, 173, 0.18); color: #25354c; }
+        .http-delete { background: rgba(163, 74, 74, 0.2); color: #5b2525; }
 
         .api-card-footer {
             display: flex;
@@ -678,25 +674,30 @@
         .api-open-btn {
             border-radius: 999px;
             border: 1px solid rgba(27,38,32,0.2);
-            padding: 0.25rem 0.8rem;
+            padding: 0.25rem 0.9rem;
             font-size: 0.78rem;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.96);
+            color: #2f2c24;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
         }
 
-        /* REQUEST HISTORY */
+        .api-open-btn:hover {
+            border-color: rgba(184,155,87,0.7);
+        }
 
         .request-history {
             margin-top: 1.5rem;
             padding: 1rem 1.1rem;
             border-radius: 14px;
             border: 1px solid rgba(27,38,32,0.12);
-            background: rgba(255,255,255,0.85);
+            background: rgba(255,255,255,0.9);
             font-size: 0.8rem;
         }
 
         .request-history-title {
             font-weight: 500;
             margin-bottom: 0.3rem;
+            color: #2c2a23;
         }
 
         #requestHistoryList {
@@ -708,9 +709,8 @@
         #requestHistoryList li {
             padding: 0.15rem 0;
             opacity: 0.9;
+            color: #5a564a;
         }
-
-        /* Skeleton loader */
 
         .skeleton-block {
             border-radius: 8px;
@@ -727,8 +727,6 @@
             0% { background-position: 0% 0; }
             100% { background-position: -200% 0; }
         }
-
-        /* Modal & code */
 
         .modal-elegant {
             border-radius: 18px;
@@ -772,8 +770,6 @@
             font-size: 0.78rem;
             box-shadow: 0 10px 26px rgba(0,0,0,0.6);
         }
-
-        /* Responsive layout */
 
         @media (min-width: 992px) {
             .main-header,
@@ -829,7 +825,7 @@
                 height: 36px;
                 border-radius: 999px;
                 border: 1px solid rgba(27,38,32,0.18);
-                background: rgba(255,255,255,0.7);
+                background: rgba(255,255,255,0.9);
             }
 
             .main-header {
@@ -847,7 +843,7 @@
         }
 
         /* =============================================== */
-        /* DARK MODE + GLOW                                */
+        /* DARK MODE + KONTRAS                             */
         /* =============================================== */
 
         body.dark-mode {
@@ -874,7 +870,7 @@
 
         body.dark-mode .eyebrow-text,
         body.dark-mode .toggle-label {
-            color: #b7ae97;
+            color: #c2b89d;
         }
 
         body.dark-mode .theme-toggle {
@@ -903,6 +899,29 @@
             box-shadow: 0 6px 18px rgba(0,0,0,0.7);
         }
 
+        body.dark-mode .side-nav {
+            background: linear-gradient(
+                180deg,
+                rgba(6, 15, 12, 0.98),
+                rgba(2, 8, 5, 0.9)
+            );
+            border-right-color: rgba(255,255,255,0.2);
+            box-shadow: 18px 0 40px rgba(0,0,0,0.9);
+        }
+
+        body.dark-mode .side-nav-links {
+            background: rgba(6, 12, 10, 0.96);
+            border-color: rgba(214,193,140,0.75);
+            box-shadow:
+                0 22px 40px rgba(0,0,0,0.9),
+                0 0 24px rgba(96, 196, 144, 0.4);
+        }
+
+        body.dark-mode .nav-collapse-btn {
+            background: rgba(7, 14, 11, 0.98);
+            color: #f4e7c8;
+        }
+
         body.dark-mode #apiContent {
             border-color: rgba(214,193,140,0.5);
             background: rgba(9, 14, 11, 0.96);
@@ -912,26 +931,63 @@
                 0 0 26px rgba(93, 184, 136, 0.3);
         }
 
-        body.dark-mode .side-nav {
-            background: linear-gradient(
-                180deg,
-                rgba(6, 15, 12, 0.95),
-                rgba(2, 8, 5, 0.85)
-            );
-            border-right-color: rgba(255,255,255,0.15);
-            box-shadow: 12px 0 30px rgba(0,0,0,0.8);
+        body.dark-mode .api-card {
+            background: rgba(10,14,11,0.98);
+            border-color: rgba(214,193,140,0.45);
+            box-shadow: 0 14px 32px rgba(0,0,0,0.85);
         }
 
-        body.dark-mode .side-nav-links {
-            background: rgba(6, 12, 10, 0.95);
+        body.dark-mode .api-card:hover {
+            box-shadow:
+                0 18px 40px rgba(0,0,0,0.95),
+                0 0 22px rgba(96,196,144,0.35);
+        }
+
+        body.dark-mode .api-card-title {
+            color: #f5ecd6;
+        }
+
+        body.dark-mode .api-card-desc {
+            color: #cbc1a5;
+        }
+
+        body.dark-mode .api-card-footer {
+            color: #b9b09a;
+        }
+
+        body.dark-mode .filter-chip {
+            background: rgba(9,14,11,0.98);
+            border-color: rgba(214,193,140,0.5);
+            color: #e8ddc8;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.85);
+        }
+
+        body.dark-mode .filter-chip.active {
+            background: rgba(96,196,144,0.22);
+            border-color: rgba(96,196,144,0.85);
+            color: #f4f7f0;
+        }
+
+        body.dark-mode .api-open-btn {
+            background: rgba(9,14,11,0.98);
+            color: #f0e6cf;
             border-color: rgba(214,193,140,0.6);
             box-shadow:
-                0 22px 40px rgba(0,0,0,0.85),
-                0 0 24px rgba(96, 196, 144, 0.4);
+                0 6px 18px rgba(0,0,0,0.9),
+                0 0 14px rgba(93,184,136,0.25);
         }
 
-        body.dark-mode .nav-collapse-btn {
-            background: rgba(7, 14, 11, 0.95);
+        body.dark-mode .request-history {
+            background: rgba(9,14,11,0.98);
+            border-color: rgba(214,193,140,0.55);
+        }
+
+        body.dark-mode .request-history-title {
+            color: #f4ecd4;
+        }
+
+        body.dark-mode #requestHistoryList li {
+            color: #c5bca5;
         }
 
         body.dark-mode .search-input-group {
@@ -970,22 +1026,6 @@
                 0 0 26px rgba(115, 240, 177, 0.8);
         }
 
-        body.dark-mode .request-history {
-            background: rgba(9,14,11,0.96);
-            border-color: rgba(214,193,140,0.5);
-        }
-
-        body.dark-mode .api-card {
-            background: rgba(10,14,11,0.96);
-            border-color: rgba(214,193,140,0.4);
-        }
-
-        body.dark-mode .api-card:hover {
-            box-shadow:
-                0 18px 40px rgba(0,0,0,0.85),
-                0 0 22px rgba(96,196,144,0.35);
-        }
-
         body.dark-mode .modal-elegant {
             background: #131813;
         }
@@ -997,8 +1037,6 @@
 </head>
 
 <body>
-
-<!-- ================= SIDEBAR ================= -->
 
 <aside class="side-nav" id="sideNavigation" aria-label="Navigasi utama">
     <div class="side-nav-logo d-flex align-items-center gap-3">
@@ -1031,10 +1069,7 @@
     </button>
 </aside>
 
-<!-- BACKDROP UNTUK CLICK DI LUAR SIDEBAR (MOBILE) -->
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
-<!-- ================= HEADER (DENGAN SEARCH BAR) ================= -->
 
 <header class="main-header">
     <div class="header-left">
@@ -1059,8 +1094,6 @@
         </div>
     </div>
 </header>
-
-<!-- ================= HERO ================= -->
 
 <section id="home" class="hero-section">
     <div class="hero-content">
@@ -1112,7 +1145,6 @@
             <div class="banner-frame">
                 <img src="/src/banner.gif" alt="Banner Ada API" class="banner-oldmoney">
             </div>
-            <!-- SERVICE STATUS DI BAWAH GIF -->
             <div class="banner-overlay-card">
                 <span class="overlay-title">Ada API</span>
                 <span class="overlay-sub">Service Status</span>
@@ -1124,8 +1156,6 @@
         </div>
     </div>
 </section>
-
-<!-- ================= API SECTION ================= -->
 
 <section id="apis" class="api-section">
     <div class="section-header-line mb-2">
@@ -1140,7 +1170,6 @@
         melalui konsol yang terintegrasi.
     </p>
 
-    <!-- FILTER CHIPS -->
     <div class="api-filters">
         <button class="filter-chip active" data-filter="all">Semua</button>
         <button class="filter-chip" data-filter="auth">Auth</button>
@@ -1149,35 +1178,14 @@
     </div>
 
     <div id="apiContent">
-        <!--
-            Diisi dinamis oleh script.js kamu.
-            Contoh struktur yang cocok dengan CSS:
-
-            <div class="api-card" data-category="auth">
-                <div class="api-card-header">
-                    <div>
-                        <div class="api-card-title">Login</div>
-                        <div class="api-card-desc">Mendapatkan token akses.</div>
-                    </div>
-                    <span class="http-badge http-post">POST</span>
-                </div>
-                <div class="api-card-footer">
-                    <span class="api-path">/v1/auth/login</span>
-                    <button class="api-open-btn">Detail</button>
-                </div>
-            </div>
-        -->
         Endpoint akan dimuat di sini melalui <code>script.js</code>.
     </div>
 
-    <!-- MINI REQUEST HISTORY -->
     <div class="request-history">
         <div class="request-history-title">Riwayat singkat</div>
         <ul id="requestHistoryList"></ul>
     </div>
 </section>
-
-<!-- ================= MODAL RESPONSE ================= -->
 
 <div class="modal fade" id="apiResponseModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1192,16 +1200,12 @@
                 </div>
             </div>
             <div class="modal-body">
-                <!-- Skeleton loader -->
                 <div id="apiSkeleton" class="skeleton-block d-none"></div>
-                <!-- Konten respons -->
                 <pre id="apiResponseContent" class="code-block"></pre>
             </div>
         </div>
     </div>
 </div>
-
-<!-- ================= SCRIPTS ================= -->
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -1226,10 +1230,10 @@
         const historyList = document.getElementById('requestHistoryList');
         const filterChips = document.querySelectorAll('.filter-chip');
 
-        let currentRequestMeta = null; // { method, url, body, status }
+        let currentRequestMeta = null;
 
         function setSidebar(open) {
-            if (window.innerWidth > 991) return; // desktop: sidebar selalu terbuka
+            if (window.innerWidth > 991) return;
             if (open) {
                 sideNav.classList.add('open');
                 body.classList.add('sidebar-open');
@@ -1241,7 +1245,6 @@
             }
         }
 
-        // ===== THEME HANDLER (system + manual) =====
         function applyTheme(mode) {
             if (mode === 'dark') {
                 body.classList.add('dark-mode');
@@ -1252,13 +1255,11 @@
             }
         }
 
-        // 1) cek apakah user sudah pernah pilih theme sebelumnya
         let storedTheme = localStorage.getItem(THEME_KEY);
         if (storedTheme !== 'light' && storedTheme !== 'dark') {
             storedTheme = null;
         }
 
-        // 2) kalau belum, ikuti tema sistem
         if (!storedTheme) {
             const prefersDark = window.matchMedia &&
                 window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1267,7 +1268,6 @@
             applyTheme(storedTheme);
         }
 
-        // 3) kalau sistem berubah dan user belum override, ikut sistem
         const mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
         if (mql && typeof mql.addEventListener === 'function') {
             mql.addEventListener('change', (e) => {
@@ -1278,7 +1278,6 @@
             });
         }
 
-        // 4) user toggle manual
         if (themeToggle) {
             themeToggle.addEventListener('change', function () {
                 const mode = themeToggle.checked ? 'dark' : 'light';
@@ -1287,7 +1286,6 @@
             });
         }
 
-        // ===== SIDEBAR (mobile) =====
         if (menuToggle) {
             menuToggle.addEventListener('click', function () {
                 const isOpen = sideNav.classList.contains('open');
@@ -1325,7 +1323,6 @@
             }
         });
 
-        // ===== SEARCH =====
         if (clearSearch && searchInput) {
             clearSearch.addEventListener('click', () => {
                 searchInput.value = '';
@@ -1333,7 +1330,6 @@
             });
         }
 
-        // Shortcut "/" untuk fokus search
         document.addEventListener('keydown', (e) => {
             if (e.key === '/' &&
                 document.activeElement.tagName !== 'INPUT' &&
@@ -1343,7 +1339,6 @@
             }
         });
 
-        // ===== FILTER CHIPS =====
         if (filterChips.length) {
             filterChips.forEach(chip => {
                 chip.addEventListener('click', () => {
@@ -1354,17 +1349,13 @@
                     const cards = document.querySelectorAll('.api-card');
                     cards.forEach(card => {
                         const cat = card.dataset.category || 'other';
-                        if (filter === 'all' || cat === filter) {
-                            card.style.display = '';
-                        } else {
-                            card.style.display = 'none';
-                        }
+                        card.style.display =
+                            (filter === 'all' || cat === filter) ? '' : 'none';
                     });
                 });
             });
         }
 
-        // ===== SKELETON + RESPONSE HELPER =====
         function showLoading() {
             if (!apiSkeleton || !apiResponseContent) return;
             apiSkeleton.classList.remove('d-none');
@@ -1378,7 +1369,6 @@
             apiResponseContent.textContent = text;
         }
 
-        // ===== HISTORY =====
         function pushHistory(meta) {
             if (!historyList || !meta) return;
             const { method, url, status } = meta;
@@ -1390,11 +1380,9 @@
             }
         }
 
-        // ===== COPY CURL =====
         if (copyCurlBtn) {
             copyCurlBtn.addEventListener('click', () => {
                 if (!currentRequestMeta) return;
-
                 const { method, url, body } = currentRequestMeta;
                 if (!method || !url) return;
 
@@ -1409,10 +1397,8 @@
             });
         }
 
-        // ===== EXPOSE HELPER UNTUK script.js KAMU =====
         window.adaUI = {
             setRequestMeta(meta) {
-                // meta: { method, url, body, status }
                 currentRequestMeta = meta || null;
             },
             startLoading(meta) {
@@ -1420,7 +1406,6 @@
                 showLoading();
             },
             endLoading(payload) {
-                // payload: { responseText, status }
                 if (payload && typeof payload.status !== 'undefined') {
                     if (!currentRequestMeta) currentRequestMeta = {};
                     currentRequestMeta.status = payload.status;
