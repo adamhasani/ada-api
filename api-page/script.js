@@ -1,4 +1,4 @@
-// Ada API Console – versi simple + fallback agar halaman nggak kosong
+// Ada API Console – script utama (nyambung ke index.html + settings.json)
 
 document.addEventListener("DOMContentLoaded", () => {
   // ================================
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     themeToggle: document.getElementById("themeToggle"),
     themePreset: document.getElementById("themePreset"),
 
-    // main sections
+    // main content
     apiFilters: document.getElementById("apiFilters"),
     apiContent: document.getElementById("apiContent"),
     apiRequestInput: document.getElementById("apiRequestInput"),
@@ -53,28 +53,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // STATE
   // ================================
   let settings = null;
-  let favorites = loadJSON("ada-api-fav", []);      // array of path
+  let currentApiItem = null;
+  let favorites = loadJSON("ada-api-fav", []); // array of path
   let historyItems = loadJSON("ada-api-history", []); // {name, path, ts}
   let themeMode = null;
   let themePresetInternal = null;
 
-  // Fallback kalau settings.json gagal dimuat
+  // fallback kalau settings.json gagal dimuat
   const fallbackCategories = [
     {
-      name: "General",
+      name: "Contoh",
       items: [
         {
-          name: "Status API",
-          desc: "Cek status dasar layanan Ada API.",
+          name: "Status API (contoh)",
+          desc: "Ini hanya contoh kalau settings.json tidak terbaca.",
           method: "GET",
           path: "https://example.com/status",
-          status: "online",
-        },
-        {
-          name: "Info Versi",
-          desc: "Contoh endpoint versi API.",
-          method: "GET",
-          path: "https://example.com/version",
           status: "online",
         },
       ],
@@ -82,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   // ================================
-  // UTILITAS
+  // UTIL
   // ================================
   function loadJSON(key, fallback) {
     try {
@@ -109,43 +103,29 @@ document.addEventListener("DOMContentLoaded", () => {
     DOM.logsConsole.scrollTop = DOM.logsConsole.scrollHeight;
   }
 
-  function addHistory(entry) {
-    historyItems.unshift({
-      name: entry.name,
-      path: entry.path,
-      ts: Date.now(),
-    });
-    historyItems = historyItems.slice(0, 20);
-    saveJSON("ada-api-history", historyItems);
-    renderHistory();
-  }
-
-  function renderHistory() {
-    if (!DOM.requestHistoryList) return;
-    DOM.requestHistoryList.innerHTML = "";
-    historyItems.forEach((item) => {
-      const li = document.createElement("li");
-      const date = new Date(item.ts);
-      li.textContent = `${date.toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })} — ${item.name} (${item.path})`;
-      DOM.requestHistoryList.appendChild(li);
-    });
-  }
-
-  function beautifyJSON(json) {
+  function beautifyJSON(text) {
     try {
-      if (typeof json === "string") json = JSON.parse(json);
-      return JSON.stringify(json, null, 2);
+      const obj = JSON.parse(text);
+      return JSON.stringify(obj, null, 2);
     } catch {
-      return String(json);
+      return text;
     }
   }
 
   // ================================
-  // MODE TERANG / GELAP
+  // THEME MODE (LIGHT / DARK)
   // ================================
+  function detectSystemMode() {
+    try {
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        return "dark";
+      }
+      return "light";
+    } catch {
+      return "light";
+    }
+  }
+
   function applyMode(mode) {
     const isDark = mode === "dark";
     DOM.body.classList.toggle("dark-mode", isDark);
@@ -159,10 +139,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (stored === "dark" || stored === "light") {
       applyMode(stored);
     } else {
-      const prefersDark =
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches;
-      applyMode(prefersDark ? "dark" : "light");
+      applyMode(detectSystemMode());
+      // follow system sampai user override
+      if (window.matchMedia) {
+        const mq = window.matchMedia("(prefers-color-scheme: dark)");
+        const handler = (e) => applyMode(e.matches ? "dark" : "light");
+        if (mq.addEventListener) mq.addEventListener("change", handler);
+        else mq.addListener(handler);
+      }
     }
 
     if (DOM.themeToggle) {
@@ -173,25 +157,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ================================
-  // THEME PRESET
+  // THEME PRESET (data-theme)
   // ================================
   const presetMap = {
     emerald: "emerald-gold",
     noir: "noir",
-    ivory: "emerald-gold",
+    ivory: "royal-amber",
     cyber: "cyber-glow",
-    olive: "royal-amber",
+    olive: "emerald-gold",
   };
 
   const reversePresetMap = {
     "emerald-gold": "emerald",
     noir: "noir",
+    "royal-amber": "ivory",
     "cyber-glow": "cyber",
-    "royal-amber": "olive",
   };
 
   function applyPreset(internalKey) {
-    const allowed = ["emerald-gold", "noir", "cyber-glow", "royal-amber"];
+    const allowed = ["emerald-gold", "noir", "royal-amber", "cyber-glow"];
     if (!allowed.includes(internalKey)) internalKey = "emerald-gold";
     DOM.body.setAttribute("data-theme", internalKey);
     themePresetInternal = internalKey;
@@ -287,9 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const top = section.offsetTop;
         const bottom = top + section.offsetHeight;
         const id = section.getAttribute("id");
-        const link = document.querySelector(
-          `.side-nav-link[href="#${id}"]`
-        );
+        const link = document.querySelector(`.side-nav-link[href="#${id}"]`);
         if (!link) return;
         if (scrollY >= top && scrollY < bottom) {
           DOM.sideNavLinks.forEach((l) => l.classList.remove("active"));
@@ -360,11 +342,47 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ================================
-  // RENDER KARTU API
+  // HISTORY
   // ================================
-  function buildApiCard(item) {
+  function addHistory(item) {
+    historyItems.unshift({
+      name: item.name,
+      path: item.path,
+      ts: new Date().toISOString(),
+    });
+    historyItems = historyItems.slice(0, 20);
+    saveJSON("ada-api-history", historyItems);
+    renderHistory();
+  }
+
+  function renderHistory() {
+    if (!DOM.requestHistoryList) return;
+    DOM.requestHistoryList.innerHTML = "";
+    historyItems.forEach((item) => {
+      const li = document.createElement("li");
+      li.className = "history-item";
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "history-name";
+      nameSpan.textContent = item.name;
+
+      const pathSpan = document.createElement("span");
+      pathSpan.className = "history-path";
+      pathSpan.textContent = item.path;
+
+      li.appendChild(nameSpan);
+      li.appendChild(pathSpan);
+      DOM.requestHistoryList.appendChild(li);
+    });
+  }
+
+  // ================================
+  // RENDER API CARD & FILTER
+  // ================================
+  function buildApiCard(categoryName, item) {
     const col = document.createElement("div");
     col.className = "col-12 col-md-6 col-lg-4 api-item";
+    col.dataset.category = categoryName;
 
     const card = document.createElement("article");
     card.className = "api-card";
@@ -461,24 +479,42 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!DOM.apiFilters) return;
     DOM.apiFilters.innerHTML = "";
 
+    const allBtn = document.createElement("button");
+    allBtn.type = "button";
+    allBtn.className = "filter-chip active";
+    allBtn.textContent = "Semua";
+    allBtn.dataset.filter = "all";
+    DOM.apiFilters.appendChild(allBtn);
+
     categories.forEach((cat) => {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "filter-chip";
-      chip.textContent = cat.name;
-      chip.addEventListener("click", () => {
-        const targetId = `category-${cat.name
-          .toLowerCase()
-          .replace(/\s+/g, "-")}`;
-        const section = document.getElementById(targetId);
-        if (section) {
-          window.scrollTo({
-            top: section.offsetTop - 80,
-            behavior: "smooth",
-          });
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "filter-chip";
+      btn.textContent = cat.name;
+      btn.dataset.filter = cat.name;
+      DOM.apiFilters.appendChild(btn);
+    });
+
+    DOM.apiFilters.addEventListener("click", (e) => {
+      const btn = e.target.closest(".filter-chip");
+      if (!btn) return;
+      const filter = btn.dataset.filter;
+      DOM.apiFilters
+        .querySelectorAll(".filter-chip")
+        .forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const items = DOM.apiContent
+        ? DOM.apiContent.querySelectorAll(".api-item")
+        : [];
+      items.forEach((itemEl) => {
+        const catName = itemEl.dataset.category;
+        if (filter === "all" || filter === catName) {
+          itemEl.style.display = "";
+        } else {
+          itemEl.style.display = "none";
         }
       });
-      DOM.apiFilters.appendChild(chip);
     });
   }
 
@@ -486,222 +522,227 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!DOM.apiContent) return;
     DOM.apiContent.innerHTML = "";
 
-    let categories =
-      settings && Array.isArray(settings.categories) && settings.categories.length
+    const categories =
+      settings &&
+      Array.isArray(settings.categories) &&
+      settings.categories.length
         ? settings.categories
         : fallbackCategories;
 
     renderFilters(categories);
 
-    categories.forEach((category) => {
-      const section = document.createElement("section");
-      section.className = "category-section";
-      section.id = `category-${category.name
-        .toLowerCase()
-        .replace(/\s+/g, "-")}`;
-
-      const header = document.createElement("h3");
-      header.className = "category-header section-title-oldmoney";
-      header.textContent = category.name;
-
-      const row = document.createElement("div");
-      row.className = "row";
-
-      const items = Array.isArray(category.items) ? [...category.items] : [];
-      items.sort((a, b) => a.name.localeCompare(b.name));
-
+    const row = document.createElement("div");
+    row.className = "row";
+    categories.forEach((cat) => {
+      const catName = cat.name || "Tanpa Kategori";
+      const items = Array.isArray(cat.items) ? cat.items : [];
       items.forEach((item) => {
-        const col = buildApiCard(item);
+        const col = buildApiCard(catName, item);
         row.appendChild(col);
       });
+    });
+    DOM.apiContent.appendChild(row);
+  }
 
-      section.appendChild(header);
-      section.appendChild(row);
-      DOM.apiContent.appendChild(section);
+  // ================================
+  // MODAL & REQUEST
+  // ================================
+  function openApiModal(item) {
+    currentApiItem = item;
+    if (!DOM.modalEl) return;
+
+    const method = (item.method || "GET").toUpperCase();
+    const url = item.path || "";
+
+    if (DOM.modalTitle) DOM.modalTitle.textContent = item.name || "Endpoint";
+    if (DOM.modalSubtitle)
+      DOM.modalSubtitle.textContent = item.desc || url || "";
+    if (DOM.endpointText) DOM.endpointText.textContent = url;
+    if (DOM.modalStatusLine) DOM.modalStatusLine.textContent = "";
+    if (DOM.apiResponseContent) DOM.apiResponseContent.textContent = "";
+    if (DOM.modalLoading) DOM.modalLoading.classList.add("d-none");
+
+    addHistory({ name: item.name || "Endpoint", path: url });
+    appendLog(`Open modal for ${item.name} -> ${url}`);
+
+    if (modalInstance) modalInstance.show();
+
+    // auto langsung request
+    sendApiRequest();
+  }
+
+  async function sendApiRequest() {
+    if (!currentApiItem) return;
+    const method = (currentApiItem.method || "GET").toUpperCase();
+    const rawPath = currentApiItem.path || "";
+    const url = rawPath;
+
+    if (DOM.modalStatusLine) {
+      DOM.modalStatusLine.textContent = "Mengirim permintaan…";
+    }
+    if (DOM.modalLoading) DOM.modalLoading.classList.remove("d-none");
+    if (DOM.apiResponseContent) DOM.apiResponseContent.textContent = "";
+
+    appendLog(`Request ${method} ${url}`);
+
+    try {
+      const res = await fetch(url, { method });
+      const text = await res.text();
+      const pretty = beautifyJSON(text);
+
+      if (DOM.apiResponseContent) {
+        DOM.apiResponseContent.textContent = pretty;
+      }
+      if (DOM.modalStatusLine) {
+        DOM.modalStatusLine.textContent = `Status: ${res.status} ${
+          res.ok ? "(OK)" : "(Error)"
+        }`;
+      }
+    } catch (err) {
+      if (DOM.apiResponseContent) {
+        DOM.apiResponseContent.textContent = String(err);
+      }
+      if (DOM.modalStatusLine) {
+        DOM.modalStatusLine.textContent = "Gagal melakukan request.";
+      }
+      appendLog(`Error: ${err.message}`);
+    } finally {
+      if (DOM.modalLoading) DOM.modalLoading.classList.add("d-none");
+    }
+  }
+
+  function initModalEvents() {
+    if (DOM.copyEndpointBtn && DOM.endpointText) {
+      DOM.copyEndpointBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(DOM.endpointText.textContent);
+        } catch {
+          // ignore
+        }
+      });
+    }
+
+    if (DOM.copyCurlBtn) {
+      DOM.copyCurlBtn.addEventListener("click", async () => {
+        if (!currentApiItem) return;
+        const method = (currentApiItem.method || "GET").toUpperCase();
+        const url = currentApiItem.path || "";
+        const curl = `curl -X ${method} "${url}"`;
+        try {
+          await navigator.clipboard.writeText(curl);
+        } catch {
+          // ignore
+        }
+      });
+    }
+  }
+
+  // ================================
+  // REQUEST BOX → WHATSAPP
+  // ================================
+  function initRequestBox() {
+    if (!DOM.apiRequestInput || !DOM.sendApiRequest) return;
+
+    DOM.sendApiRequest.addEventListener("click", () => {
+      const text = DOM.apiRequestInput.value.trim();
+      if (!text) return;
+      const waNumber = "6287751121269";
+      const url =
+        "https://wa.me/" +
+        waNumber +
+        "?text=" +
+        encodeURIComponent("[Request Endpoint Ada API]\n\n" + text);
+      window.open(url, "_blank");
+      appendLog("Request endpoint dikirim ke WhatsApp.");
+      DOM.apiRequestInput.value = "";
     });
   }
 
-  function populateFromSettings() {
+  // ================================
+  // FX: CURSOR GLOW & BANNER
+  // ================================
+  function initCursorGlow() {
+    if (!DOM.cursorGlow) return;
+    window.addEventListener("pointermove", (e) => {
+      const x = e.clientX;
+      const y = e.clientY;
+      DOM.cursorGlow.style.transform = `translate(${x}px, ${y}px)`;
+    });
+  }
+
+  function initBannerParallax() {
+    if (!DOM.bannerParallax) return;
+    DOM.bannerParallax.addEventListener("mousemove", (e) => {
+      const rect = DOM.bannerParallax.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      const img = DOM.bannerParallax.querySelector(".banner-oldmoney");
+      if (!img) return;
+      img.style.transform = `translate(${x * 12}px, ${y * 8}px) scale(1.02)`;
+    });
+    DOM.bannerParallax.addEventListener("mouseleave", () => {
+      const img = DOM.bannerParallax.querySelector(".banner-oldmoney");
+      if (!img) return;
+      img.style.transform = "translate(0,0) scale(1)";
+    });
+  }
+
+  function initScrollReveal() {
+    const revealEls = document.querySelectorAll(".reveal");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("reveal-visible");
+          }
+        });
+      },
+      { threshold: 0.08 }
+    );
+    revealEls.forEach((el) => observer.observe(el));
+  }
+
+  // ================================
+  // SETTINGS.JSON → HERO & API
+  // ================================
+  function applySettingsToHero() {
     if (!settings) return;
     if (DOM.versionBadge && settings.version) {
       DOM.versionBadge.textContent = settings.version;
     }
   }
 
-  function loadSettings() {
-    // DISENGAJA pakai /src/settings.json supaya cocok sama struktur kamu
-    fetch("/src/settings.json")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
-        if (!json) {
-          appendLog("settings.json tidak ditemukan, pakai fallback.");
-          settings = null;
-        } else {
-          settings = json;
-          appendLog("settings.json dimuat.");
-        }
-        populateFromSettings();
-        renderApiCategories();
-      })
-      .catch(() => {
-        appendLog("Gagal memuat settings.json, pakai fallback.");
-        settings = null;
-        renderApiCategories();
-      });
-  }
-
-  // ================================
-  // MODAL API
-  // ================================
-  function openApiModal(item) {
-    if (!modalInstance) return;
-
-    const path = item.path || "";
-    const desc = item.desc || "";
-
-    DOM.modalTitle.textContent = item.name || "Respons API";
-    DOM.modalSubtitle.textContent = desc;
-    DOM.endpointText.textContent = path;
-    DOM.apiResponseContent.textContent = "";
-    DOM.modalStatusLine.textContent = "";
-    DOM.modalLoading.classList.remove("d-none");
-
-    modalInstance.show();
-
-    if (!path) {
-      DOM.modalLoading.classList.add("d-none");
-      DOM.apiResponseContent.textContent = "Endpoint tidak tersedia.";
-      return;
+  async function loadSettings() {
+    try {
+      const res = await fetch("/src/settings.json");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      settings = await res.json();
+      appendLog("settings.json loaded.");
+      applySettingsToHero();
+      renderApiCategories();
+    } catch (err) {
+      appendLog(`Gagal memuat settings.json: ${err.message}`);
+      settings = null;
+      renderApiCategories(); // pakai fallbackCategories
     }
-
-    appendLog(`Request: ${path}`);
-    addHistory({ name: item.name || "Unknown", path });
-
-    fetch(path)
-      .then(async (res) => {
-        let bodyText;
-        try {
-          const clone = res.clone();
-          bodyText = await clone.text();
-        } catch {
-          bodyText = null;
-        }
-
-        let parsed;
-        try {
-          parsed = await res.json();
-        } catch {
-          parsed = bodyText || "Tidak dapat membaca respons.";
-        }
-
-        DOM.modalLoading.classList.add("d-none");
-        DOM.modalStatusLine.textContent = `Status: ${res.status} ${res.statusText}`;
-        DOM.apiResponseContent.textContent = beautifyJSON(parsed);
-        appendLog(`Response ${res.status} untuk ${path}`);
-      })
-      .catch((err) => {
-        DOM.modalLoading.classList.add("d-none");
-        DOM.modalStatusLine.textContent = "Gagal menghubungi server.";
-        DOM.apiResponseContent.textContent = String(err);
-        appendLog(`ERROR request ${path}: ${err}`);
-      });
-  }
-
-  if (DOM.copyEndpointBtn) {
-    DOM.copyEndpointBtn.addEventListener("click", () => {
-      const text = DOM.endpointText.textContent || "";
-      if (!text) return;
-      navigator.clipboard.writeText(text).catch(() => {});
-    });
-  }
-
-  if (DOM.copyCurlBtn) {
-    DOM.copyCurlBtn.addEventListener("click", () => {
-      const endpoint = DOM.endpointText.textContent || "";
-      if (!endpoint) return;
-      const curl = `curl -X GET "${endpoint}"`;
-      navigator.clipboard.writeText(curl).catch(() => {});
-    });
-  }
-
-  // ================================
-  // REQUEST → WHATSAPP
-  // ================================
-  if (DOM.sendApiRequest && DOM.apiRequestInput) {
-    DOM.sendApiRequest.addEventListener("click", () => {
-      const text = DOM.apiRequestInput.value.trim();
-      const base = "https://wa.me/6287751121269";
-      const url =
-        text.length > 0
-          ? `${base}?text=${encodeURIComponent(text)}`
-          : base;
-      window.open(url, "_blank");
-    });
-  }
-
-  // ================================
-  // AMBIENT CURSOR GLOW
-  // ================================
-  if (DOM.cursorGlow) {
-    document.addEventListener("pointermove", (e) => {
-      DOM.cursorGlow.style.opacity = "1";
-      DOM.cursorGlow.style.left = `${e.clientX}px`;
-      DOM.cursorGlow.style.top = `${e.clientY}px`;
-    });
-
-    document.addEventListener("pointerleave", () => {
-      DOM.cursorGlow.style.opacity = "0";
-    });
-  }
-
-  // ================================
-  // PARALLAX BANNER
-  // ================================
-  if (DOM.bannerParallax) {
-    DOM.bannerParallax.addEventListener("pointermove", (e) => {
-      const rect = DOM.bannerParallax.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      const rotateX = y * -6;
-      const rotateY = x * 6;
-      DOM.bannerParallax.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-    });
-
-    DOM.bannerParallax.addEventListener("pointerleave", () => {
-      DOM.bannerParallax.style.transform = "rotateX(0) rotateY(0)";
-    });
-  }
-
-  // ================================
-  // SCROLL REVEAL
-  // ================================
-  const revealEls = document.querySelectorAll(".reveal");
-  if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("reveal-visible");
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.12 }
-    );
-
-    revealEls.forEach((el) => observer.observe(el));
-  } else {
-    revealEls.forEach((el) => el.classList.add("reveal-visible"));
   }
 
   // ================================
   // INIT
   // ================================
-  initMode();
-  initPreset();
-  initSidebar();
-  initSearch();
-  renderHistory();
-  loadSettings();
-  appendLog("Ada API Console siap.");
+  async function init() {
+    initMode();
+    initPreset();
+    initSidebar();
+    initSearch();
+    initModalEvents();
+    initRequestBox();
+    initCursorGlow();
+    initBannerParallax();
+    initScrollReveal();
+    renderHistory();
+    await loadSettings();
+  }
+
+  init();
 });
