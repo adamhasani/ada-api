@@ -7,20 +7,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const DOM = {
     body: document.body,
 
-    // sidebar / nav
     sideNav: document.querySelector(".side-nav"),
     sideNavLinks: document.querySelectorAll(".side-nav-link"),
     menuToggle: document.getElementById("menuToggle"),
     navCollapseBtn: document.getElementById("collapseBtn"),
     sidebarBackdrop: document.getElementById("sidebarBackdrop"),
 
-    // header
     searchInput: document.getElementById("searchInput"),
     clearSearch: document.getElementById("clearSearch"),
+
     themeToggle: document.getElementById("themeToggle"),
     themePreset: document.getElementById("themePreset"),
 
-    // main content
     apiFilters: document.getElementById("apiFilters"),
     apiContent: document.getElementById("apiContent"),
     apiRequestInput: document.getElementById("apiRequestInput"),
@@ -28,14 +26,11 @@ document.addEventListener("DOMContentLoaded", () => {
     requestHistoryList: document.getElementById("requestHistoryList"),
     logsConsole: document.getElementById("liveLogs"),
 
-    // hero
     versionBadge: document.getElementById("versionBadge"),
 
-    // fx
     bannerParallax: document.getElementById("bannerParallax"),
     cursorGlow: document.getElementById("cursorGlow"),
 
-    // modal
     modalEl: document.getElementById("apiResponseModal"),
     modalTitle: document.getElementById("modalTitle"),
     modalSubtitle: document.getElementById("modalSubtitle"),
@@ -54,21 +49,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // ================================
   let settings = null;
   let currentApiItem = null;
-  let favorites = loadJSON("ada-api-fav", []); // array of path
-  let historyItems = loadJSON("ada-api-history", []); // {name, path, ts}
+  let favorites = loadJSON("ada-api-fav", []); // array path
+  let historyItems = loadJSON("ada-api-history", []); // {name,path,ts}
   let themeMode = null;
   let themePresetInternal = null;
 
-  // fallback kalau settings.json gagal dimuat
+  // fallback kalau settings.json gagal
   const fallbackCategories = [
     {
       name: "Contoh",
       items: [
         {
           name: "Status API (contoh)",
-          desc: "Ini hanya contoh kalau settings.json tidak terbaca.",
+          desc: "Contoh endpoint kalau settings.json belum terbaca.",
           method: "GET",
-          path: "https://example.com/status",
+          path: "https://httpbin.org/status/200",
           status: "online",
         },
       ],
@@ -117,7 +112,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ================================
   function detectSystemMode() {
     try {
-      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
         return "dark";
       }
       return "light";
@@ -140,7 +138,6 @@ document.addEventListener("DOMContentLoaded", () => {
       applyMode(stored);
     } else {
       applyMode(detectSystemMode());
-      // follow system sampai user override
       if (window.matchMedia) {
         const mq = window.matchMedia("(prefers-color-scheme: dark)");
         const handler = (e) => applyMode(e.matches ? "dark" : "light");
@@ -323,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ================================
-  // FAVORIT
+  // FAVORIT & HISTORY
   // ================================
   function isFav(path) {
     return favorites.includes(path);
@@ -341,9 +338,6 @@ document.addEventListener("DOMContentLoaded", () => {
     saveJSON("ada-api-fav", favorites);
   }
 
-  // ================================
-  // HISTORY
-  // ================================
   function addHistory(item) {
     historyItems.unshift({
       name: item.name,
@@ -495,7 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
       DOM.apiFilters.appendChild(btn);
     });
 
-    DOM.apiFilters.addEventListener("click", (e) => {
+    DOM.apiFilters.onclick = (e) => {
       const btn = e.target.closest(".filter-chip");
       if (!btn) return;
       const filter = btn.dataset.filter;
@@ -515,7 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
           itemEl.style.display = "none";
         }
       });
-    });
+    };
   }
 
   function renderApiCategories() {
@@ -574,8 +568,9 @@ document.addEventListener("DOMContentLoaded", () => {
   async function sendApiRequest() {
     if (!currentApiItem) return;
     const method = (currentApiItem.method || "GET").toUpperCase();
-    const rawPath = currentApiItem.path || "";
-    const url = rawPath;
+    const url = currentApiItem.path || "";
+
+    if (!url) return;
 
     if (DOM.modalStatusLine) {
       DOM.modalStatusLine.textContent = "Mengirim permintaan…";
@@ -598,6 +593,7 @@ document.addEventListener("DOMContentLoaded", () => {
           res.ok ? "(OK)" : "(Error)"
         }`;
       }
+      appendLog(`Response ${res.status} untuk ${url}`);
     } catch (err) {
       if (DOM.apiResponseContent) {
         DOM.apiResponseContent.textContent = String(err);
@@ -723,7 +719,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       appendLog(`Gagal memuat settings.json: ${err.message}`);
       settings = null;
-      renderApiCategories(); // pakai fallbackCategories
+      renderApiCategories(); // fallback
     }
   }
 
@@ -731,6 +727,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // INIT
   // ================================
   async function init() {
+    // bersihin placeholder log di HTML (kalau ada)
+    if (DOM.logsConsole) DOM.logsConsole.textContent = "";
+
     initMode();
     initPreset();
     initSidebar();
@@ -741,7 +740,10 @@ document.addEventListener("DOMContentLoaded", () => {
     initBannerParallax();
     initScrollReveal();
     renderHistory();
+
+    appendLog("Menyiapkan konsol Ada API…");
     await loadSettings();
+    appendLog("Ada API Console siap.");
   }
 
   init();

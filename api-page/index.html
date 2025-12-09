@@ -2,363 +2,315 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Ada API Console</title>
-  <meta name="description" content="Ada API - dokumentasi & konsol API modern dengan gaya old money." />
-  <meta name="color-scheme" content="light dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Konsol dokumentasi & pengujian untuk Ada API."
+  />
 
-  <link rel="icon" href="/src/icon.png" type="image/png" />
-
-  <!-- Fonts & Icons -->
+  <!-- Bootstrap & Font Awesome CDN -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:wght@500;600;700&display=swap"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
     rel="stylesheet"
   />
   <link
     rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
   />
 
-  <!-- Bootstrap (for modal) -->
+  <!-- Google Fonts -->
   <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap"
     rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
   />
 
-  <!-- Main style -->
+  <!-- Styles -->
   <link rel="stylesheet" href="/styles.css" />
 </head>
-<body>
-
-  <!-- Ambient cursor glow -->
+<body data-theme="emerald-gold" class="dark-mode">
+  <!-- Cursor Glow -->
   <div id="cursorGlow" class="cursor-glow"></div>
 
-  <!-- Sidebar -->
-  <aside class="side-nav" id="sideNavigation" aria-label="Navigasi utama">
+  <!-- SIDEBAR -->
+  <nav class="side-nav">
     <div class="side-nav-logo">
       <div class="logo-frame">
-        <img src="/src/icon.png" alt="Logo Ada API" class="logo-img" />
+        <img src="/src/icon.png" alt="Ada API" class="logo-img" />
       </div>
       <div class="brand-block">
-        <span class="brand-mark" id="sideNavName">Ada API</span>
-        <span class="brand-subtext">Developer Console</span>
+        <div class="brand-mark">ADA API</div>
+        <div class="brand-subtext">Private AI Console</div>
       </div>
     </div>
 
-    <nav class="side-nav-links" aria-label="Menu utama">
-      <a href="#home" class="side-nav-link active">
-        <i class="fas fa-home"></i><span>Beranda</span>
+    <div class="side-nav-links">
+      <a href="#hero" class="side-nav-link active">
+        <i class="fa-solid fa-house"></i>
+        <span>Beranda</span>
       </a>
-      <a href="#apis" class="side-nav-link">
-        <i class="fas fa-plug"></i><span>API</span>
+      <a href="#collection" class="side-nav-link">
+        <i class="fa-solid fa-layer-group"></i>
+        <span>Koleksi Endpoint</span>
       </a>
       <a href="#request" class="side-nav-link">
-        <i class="fas fa-lightbulb"></i><span>Request API</span>
+        <i class="fa-solid fa-paper-plane"></i>
+        <span>Request Khusus</span>
       </a>
       <a href="#history" class="side-nav-link">
-        <i class="fas fa-clock-rotate-left"></i><span>Riwayat</span>
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span>Riwayat</span>
       </a>
       <a href="#logs" class="side-nav-link">
-        <i class="fas fa-terminal"></i><span>Live Logs</span>
+        <i class="fa-solid fa-terminal"></i>
+        <span>Logs</span>
       </a>
-      <a href="https://github.com/adamhasani" target="_blank" rel="noopener noreferrer" class="side-nav-link">
-        <i class="fab fa-github"></i><span>GitHub</span>
-      </a>
-      <a href="https://wa.me/6287751121269" target="_blank" rel="noopener noreferrer" class="side-nav-link">
-        <i class="fas fa-headset"></i><span>Contact</span>
-      </a>
-    </nav>
-
-    <div class="side-nav-footer">
-      <div class="theme-switcher">
-        <span>Mode tampilan</span>
-        <label class="switch">
-          <input type="checkbox" id="themeToggle" />
-          <span class="slider"></span>
-        </label>
-      </div>
-      <small id="wm" class="side-nav-copy"></small>
     </div>
 
-    <button class="nav-collapse-btn" type="button" id="collapseBtn" aria-label="Tutup sidebar">
-      <i class="fas fa-angle-left"></i>
+    <button id="collapseBtn" class="nav-collapse-btn" type="button">
+      <i class="fa-solid fa-chevron-left"></i>
     </button>
-  </aside>
+  </nav>
 
-  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <!-- BACKDROP SIDEBAR MOBILE -->
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 
-  <!-- Header -->
-  <header class="main-header">
-    <div class="header-left">
-      <button class="menu-toggle" id="menuToggle" aria-label="Buka menu">
-        <i class="fas fa-bars"></i>
-      </button>
-      <div class="header-title">
-        <span id="page">Ada API Documentation</span>
-      </div>
-    </div>
-
-    <div class="header-center">
-      <div class="search-input-group">
-        <span class="search-icon"><i class="fas fa-search"></i></span>
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Cari endpoint…"
-          aria-label="Cari API"
-        />
-        <button type="button" id="clearSearch" class="search-clear" aria-label="Hapus pencarian">
-          <i class="fas fa-times"></i>
+  <!-- MAIN WRAPPER -->
+  <div class="main-wrapper">
+    <!-- HEADER -->
+    <header class="main-header">
+      <div class="header-left">
+        <button id="menuToggle" class="menu-toggle" type="button">
+          <i class="fa-solid fa-bars"></i>
         </button>
+        <div class="header-title">Ada API Console</div>
       </div>
-    </div>
 
-    <div class="header-right">
-      <div class="preset-group">
-        <span class="theme-label">Tema warna</span>
-        <select id="themePreset" class="preset-select" aria-label="Pilih tema warna">
-          <option value="emerald-gold">Emerald Gold</option>
-          <option value="noir">Noir</option>
-          <option value="cyber-glow">Cyber Glow</option>
-          <option value="royal-amber">Royal Amber</option>
-        </select>
+      <div class="header-center">
+        <div class="search-input-group">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Cari endpoint, deskripsi, atau path…"
+          />
+          <button id="clearSearch" class="search-clear" type="button">
+            Bersihkan
+          </button>
+        </div>
       </div>
-    </div>
-  </header>
 
-  <!-- Loading (optional) -->
-  <div id="loadingScreen" class="loading-screen hidden">
-    <div class="loading-inner">
-      <div class="spinner"></div>
-      <p>Menyiapkan konsol Ada API…</p>
-    </div>
-  </div>
-
-  <main>
-    <!-- HERO / HOME -->
-    <section id="home" class="hero-section reveal">
-      <div class="hero-content">
-        <p class="eyebrow-text">Ada Studio</p>
-        <h1 class="hero-title" id="name">Ada API</h1>
-        <div class="hero-meta">
-          <span class="badge-pill" id="version">v1.2</span>
-          <span class="divider-dot">•</span>
-          <span class="hero-meta-text" id="versionHeader">Online</span>
+      <div class="header-right">
+        <div class="theme-toggle-group">
+          <div class="theme-label">Mode</div>
+          <div class="toggle-track">
+            <input id="themeToggle" type="checkbox" />
+            <span class="toggle-thumb"></span>
+          </div>
         </div>
 
-        <p class="hero-description" id="description">
-          Dokumentasi dan konsol Ada API dengan nuansa klasik dan modern. Dirancang
-          agar kamu bisa menguji endpoint dengan tenang, rapi, dan efisien.
+        <div class="preset-group">
+          <div class="theme-label">Tema</div>
+          <select id="themePreset" class="preset-select">
+            <option value="emerald">Emerald Gold</option>
+            <option value="noir">Noir</option>
+            <option value="ivory">Ivory Amber</option>
+            <option value="cyber">Cyber Glow</option>
+            <option value="olive">Olive Night</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main>
+      <!-- HERO -->
+      <section id="hero" class="hero-section reveal">
+        <div class="hero-content">
+          <div class="eyebrow-text">SISTEM PRIBADI • API LAB</div>
+          <h1 class="hero-title">Ada API</h1>
+
+          <div class="hero-meta">
+            <span class="badge-pill">Versi <span id="versionBadge">v1.0</span></span>
+            <span class="divider-dot">•</span>
+            <span class="hero-meta-text">Console dokumentasi & uji coba cepat</span>
+          </div>
+
+          <p class="hero-description">
+            Kumpulkan, kelola, dan uji semua endpoint API pribadi kamu
+            dalam satu konsol yang rapi. Dirancang untuk workflow pribadi,
+            bukan untuk orang lain.
+          </p>
+
+          <a href="#collection" class="hero-btn">
+            <i class="fa-solid fa-bolt"></i>
+            Lihat Koleksi Endpoint
+          </a>
+
+          <div class="hero-tags">
+            <span class="tag-chip">AI & Tools</span>
+            <span class="tag-chip">Private Endpoint</span>
+            <span class="tag-chip">Prompt Utilities</span>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div id="bannerParallax" class="banner-container-oldmoney">
+            <div class="banner-frame">
+              <img
+                src="/src/banner.gif"
+                alt="Ada API Banner"
+                class="banner-oldmoney"
+              />
+            </div>
+            <div class="banner-overlay-card">
+              <div class="overlay-header">
+                <div>
+                  <div class="overlay-title">PRIVATE CONSOLE</div>
+                  <div class="overlay-sub">Internal Only</div>
+                </div>
+                <div class="overlay-status">
+                  <span class="status-dot"></span>
+                  <span>Online</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- KOLEKSI ENDPOINT -->
+      <section id="collection" class="reveal">
+        <div class="section-header-line">
+          <div>
+            <h2 class="section-title-oldmoney">Koleksi Endpoint</h2>
+            <p class="section-subtitle">
+              Endpoint dari <code>src/settings.json</code> akan muncul di sini.
+            </p>
+          </div>
+          <div class="gold-divider"></div>
+        </div>
+
+        <p class="section-description">
+          Gunakan koleksi ini untuk mengatur model AI, randomizer, dan tools lain
+          yang kamu pakai sehari-hari. Klik <strong>Try</strong> untuk melihat respons.
         </p>
 
-        <a
-          href="https://github.com/adamhasani"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="hero-btn"
-        >
-          <span>Profil GitHub</span>
-          <i class="fab fa-github"></i>
-        </a>
+        <div id="apiFilters" class="api-filters"></div>
 
-        <div class="hero-tags" id="apiLinks">
-          <!-- Link dinamis dari script.js -->
+        <div id="apiContent" class="api-content"></div>
+      </section>
+
+      <!-- REQUEST SECTION -->
+      <section id="request" class="request-section reveal">
+        <div class="section-header-line small">
+          <h3 class="section-title-small">Request Endpoint Khusus</h3>
+          <div class="gold-divider thin"></div>
         </div>
-      </div>
 
-      <div class="hero-visual reveal">
-        <div class="banner-container-oldmoney" id="bannerParallax">
-          <div class="banner-frame">
-            <!-- Hardcode GIF agar loop -->
-            <img
-              src="/src/banner.gif"
-              alt="Banner Ada API"
-              class="banner-oldmoney"
-              id="dynamicImage"
-            />
+        <div class="request-api-box">
+          <div class="request-api-header">
+            <h3>Ajukan Endpoint Baru</h3>
+            <p>
+              Tulis deskripsi singkat endpoint yang kamu mau tambahkan.
+              Pesan ini akan dikirim ke WhatsApp kamu.
+            </p>
           </div>
-          <div class="banner-overlay-card">
-            <div class="overlay-header">
-              <span class="overlay-title">Ada API</span>
-              <span class="overlay-sub">Service Status</span>
-            </div>
-            <div class="overlay-status">
-              <span class="status-dot"></span>
-              <span class="overlay-status-text">Operational</span>
-            </div>
-          </div>
+
+          <textarea
+            id="apiRequestInput"
+            placeholder="Contoh: tolong buat endpoint untuk generate ide campaign TikTok berdasarkan niche dan budget..."
+          ></textarea>
+
+          <button id="sendApiRequest" type="button">
+            Kirim ke WhatsApp
+          </button>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- API LIST -->
-    <section id="apis" class="api-section reveal">
-      <div class="section-header-line">
-        <div>
-          <h2 class="section-title-oldmoney">Koleksi Endpoint</h2>
-          <p class="section-subtitle">
-            Endpoint yang dikurasi untuk integrasi yang konsisten dan tenang.
-          </p>
+      <!-- HISTORY SECTION -->
+      <section id="history" class="request-history reveal">
+        <div class="section-header-line small">
+          <h3 class="section-title-small">Riwayat Request Endpoint</h3>
+          <div class="gold-divider thin"></div>
         </div>
-        <div class="gold-divider"></div>
-      </div>
 
-      <p class="section-description">
-        Pilih endpoint di bawah, lihat detail & status, lalu coba request langsung
-        melalui konsol respons.
-      </p>
+        <ul id="requestHistoryList" class="history-list"></ul>
+      </section>
 
-      <div id="apiFilters" class="api-filters">
-        <!-- Filter chips dari script.js -->
-      </div>
-
-      <div id="apiContent" class="api-content">
-        <!-- Kartu endpoint dari script.js -->
-      </div>
-    </section>
-
-    <!-- REQUEST API -->
-    <section id="request" class="request-section reveal">
-      <div class="section-header-line small">
-        <div>
-          <h3 class="section-title-small">
-            <i class="fas fa-lightbulb me-1"></i> Request Endpoint Baru
-          </h3>
-          <p class="section-subtitle">
-            Kirim ide endpoint langsung ke WhatsApp untuk dipertimbangkan.
-          </p>
+      <!-- LOGS SECTION -->
+      <section id="logs" class="logs-section reveal">
+        <div class="section-header-line small">
+          <h3 class="section-title-small">Live Logs</h3>
+          <div class="gold-divider thin"></div>
         </div>
-        <div class="gold-divider thin"></div>
-      </div>
 
-      <div class="request-api-box">
-        <div class="request-api-header">
-          <h3>Tambah Endpoint</h3>
-          <p>
-            Tulis nama endpoint, kebutuhan parameter, dan contoh respons yang diinginkan.
-          </p>
-        </div>
-        <textarea
-          id="apiRequestInput"
-          placeholder="Contoh: /ai/stable-diffusion — parameter: prompt, style, seed, steps…"
-        ></textarea>
-        <button id="sendApiRequest">
-          <i class="fas fa-paper-plane me-1"></i> Kirim ke WhatsApp
-        </button>
-      </div>
-    </section>
+        <!-- KOSONG: diisi script.js -->
+        <pre id="liveLogs" class="logs-console"></pre>
+      </section>
+    </main>
+  </div>
 
-    <!-- HISTORY -->
-    <section id="history" class="request-history reveal">
-      <div class="section-header-line small">
-        <div>
-          <h3 class="section-title-small">
-            <i class="fas fa-clock-rotate-left me-1"></i> Riwayat Request
-          </h3>
-          <p class="section-subtitle">
-            Ringkasan beberapa request terakhir dari konsol ini.
-          </p>
-        </div>
-        <div class="gold-divider thin"></div>
-      </div>
-      <ul id="requestHistoryList" class="history-list">
-        <!-- Diisi dari script.js -->
-      </ul>
-    </section>
-
-    <!-- LIVE LOGS -->
-    <section id="logs" class="logs-section reveal">
-      <div class="section-header-line small">
-        <div>
-          <h3 class="section-title-small">
-            <i class="fas fa-terminal me-1"></i> Live Logs
-          </h3>
-          <p class="section-subtitle">
-            Log detail setiap request yang dikirim dari UI ini.
-          </p>
-        </div>
-        <div class="gold-divider thin"></div>
-      </div>
-      <pre id="logsConsole" class="logs-console">
-<!-- Log akan masuk di sini -->
-      </pre>
-    </section>
-  </main>
-
-  <!-- API Response Modal -->
-  <div class="modal fade" id="apiResponseModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+  <!-- MODAL API RESPONSE -->
+  <div
+    class="modal fade"
+    id="apiResponseModal"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content modal-elegant">
         <div class="modal-header">
           <div>
-            <h5 class="modal-title" id="apiResponseModalLabel">Respons API</h5>
-            <div class="modal-subtitle" id="apiResponseModalDesc"></div>
+            <h1 class="modal-title fs-6" id="modalTitle">Respons API</h1>
+            <div id="modalSubtitle" class="modal-subtitle">
+              Deskripsi endpoint…
+            </div>
           </div>
           <div class="modal-toolbar">
-            <button type="button" class="btn-ghost" id="copyCurlBtn">
-              <i class="fas fa-paperclip me-1"></i> Copy cURL
+            <button
+              id="copyEndpointBtn"
+              type="button"
+              class="btn-ghost small"
+            >
+              Salin Endpoint
+            </button>
+            <button id="copyCurlBtn" type="button" class="btn-ghost small">
+              Salin cURL
             </button>
             <button
               type="button"
               class="btn-close"
               data-bs-dismiss="modal"
-              aria-label="Tutup"
+              aria-label="Close"
             >
-              <i class="fas fa-times"></i>
+              <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
         </div>
         <div class="modal-body">
-          <div class="endpoint-label-row">
-            <span class="endpoint-label">Endpoint</span>
-            <button class="btn-ghost small" id="copyEndpoint">
-              <i class="far fa-copy me-1"></i> Salin
-            </button>
-          </div>
-          <pre id="apiEndpoint" class="code-block endpoint-block"></pre>
-
-          <div id="modalStatusLine" class="modal-status-line"></div>
-
-          <div id="apiResponseLoading" class="modal-loading d-none">
-            <div class="spinner"></div>
-            <p>Memproses permintaan…</p>
-          </div>
-
-          <div id="responseContainer" class="mt-2">
-            <pre id="apiResponseContent" class="code-block response-block"></pre>
-            <button class="btn-ghost small mt-2" id="copyResponse">
-              <i class="far fa-copy me-1"></i> Salin Respons
-            </button>
+          <div class="code-block mb-2">
+            <div class="endpoint-label-row">
+              <span class="endpoint-label">Endpoint</span>
+            </div>
+            <div class="endpoint-block">
+              <code id="endpointText"></code>
+            </div>
+            <p id="modalStatusLine" class="modal-status-line"></p>
+            <div id="modalLoading" class="modal-loading d-none">
+              <div class="spinner"></div>
+              <p>Mengambil respons dari server…</p>
+            </div>
           </div>
 
-          <div id="apiQueryInputContainer" class="mt-3">
-            <!-- input param dinamis jika perlu -->
-          </div>
-
-          <button class="btn-ghost mt-3" id="submitQueryBtn">
-            <i class="fas fa-play me-1"></i> Kirim Request
-          </button>
+          <pre id="apiResponseContent" class="code-block"></pre>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Notification Toast -->
-  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1200">
-    <div id="notificationToast" class="toast align-items-center" role="status" aria-live="polite" aria-atomic="true">
-      <div class="toast-body d-flex align-items-center">
-        <i class="toast-icon fas fa-info-circle me-2"></i>
-        <div>
-          <strong class="toast-title d-block mb-1">Notifikasi</strong>
-          <span class="toast-message">Pesan</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap JS + Script -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/script.js"></script>
 </body>
 </html>
