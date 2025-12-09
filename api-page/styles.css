@@ -5,9 +5,10 @@
   --text-main-light: #1f2522;
   --text-main-dark: #f8f4ea;
 
-  --accent-color: #60c490;   /* default emerald */
-  --accent-soft: rgba(96, 196, 144, 0.22);
-  --accent-strong: rgba(96, 196, 144, 0.8);
+  /* Accent default (emerald) – bisa dioverride per tema */
+  --accent-color: #60c490;
+  --accent-soft: rgba(96, 196, 144, 0.25);
+  --accent-strong: rgba(96, 196, 144, 0.85);
 
   --gold-color: #d5b975;
   --gold-soft: rgba(213, 185, 117, 0.25);
@@ -286,13 +287,6 @@ body.dark-mode .cursor-glow {
   padding: 0.1rem 0.3rem;
 }
 
-.search-input-group:has(#searchInput:focus) {
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.16),
-    0 0 12px var(--gold-soft);
-  border-color: rgba(184, 155, 87, 0.7);
-}
-
 /* THEME TOGGLE & PRESET */
 .theme-toggle-group,
 .preset-group {
@@ -308,6 +302,21 @@ body.dark-mode .cursor-glow {
   text-transform: uppercase;
 }
 
+/* bulatan mode / “mata” di kiri MODE */
+.mode-indicator,
+.mode-dot,
+.theme-mode-indicator {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 20%, var(--accent-color), #0a1510);
+  box-shadow:
+    0 0 12px var(--accent-strong),
+    0 0 22px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+/* toggle switch */
 .toggle-track {
   position: relative;
   width: 40px;
@@ -341,20 +350,6 @@ body.dark-mode .cursor-glow {
   transform: translate(17px, -50%);
   background: #111714;
   box-shadow: 0 0 10px var(--accent-strong);
-}
-
-/* bulatan mode (di kiri teks MODE / TEMA) */
-.mode-indicator,
-.mode-dot,
-.theme-mode-indicator {
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 30% 20%, #81ffd2, #0a1510);
-  box-shadow:
-    0 0 12px rgba(129, 255, 210, 0.9),
-    0 0 20px rgba(96, 196, 144, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.7);
 }
 
 /* THEME SELECT */
@@ -459,7 +454,7 @@ body.dark-mode .cursor-glow {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
-/* HERO VISUAL / PARALLAX */
+/* HERO VISUAL */
 .hero-visual {
   display: flex;
   justify-content: flex-end;
@@ -550,7 +545,7 @@ body.dark-mode .cursor-glow {
   100% { transform: scale(1.4); opacity: 0; }
 }
 
-/* SECTION HEADERS & GOLD DIVIDER */
+/* SECTION HEADERS */
 .section-header-line {
   display: flex;
   justify-content: space-between;
@@ -635,9 +630,9 @@ body.dark-mode .cursor-glow {
 }
 
 .filter-chip.active {
-  background: #101f18;
+  background: rgba(16, 31, 24, 0.95);
   color: #f5eee0;
-  border-color: #60c490;
+  border-color: var(--accent-color);
 }
 
 /* API CONTENT */
@@ -940,7 +935,7 @@ body.dark-mode .btn-close i {
   opacity: 0.9;
 }
 
-/* CODE BLOCK */
+/* CODE BLOCK / ENDPOINT BOX */
 .code-block {
   background: #151b17;
   color: #f4efe3;
@@ -1028,8 +1023,8 @@ body.dark-mode .btn-close i {
 
 body.dark-mode {
   background:
-    radial-gradient(circle at top left, rgba(96,196,144,0.24), transparent 65%),
-    radial-gradient(circle at bottom right, rgba(213,185,117,0.22), transparent 65%),
+    radial-gradient(circle at top left, rgba(96,196,144,0.22), transparent 65%),
+    radial-gradient(circle at bottom right, rgba(213,185,117,0.2), transparent 65%),
     #141f1a;
   color: #f8f4ea;
 }
@@ -1069,11 +1064,13 @@ body.dark-mode .preset-select {
 
 /* Search dark */
 body.dark-mode .search-input-group {
-  background: rgba(20,28,24,0.96);
-  border-color: rgba(111,211,162,0.55);
+  background:
+    radial-gradient(circle at 0 0, var(--accent-soft), transparent 65%),
+    rgba(20, 28, 24, 0.96);
+  border-color: var(--accent-strong);
   box-shadow:
     0 10px 26px rgba(0,0,0,0.8),
-    0 0 15px rgba(96,196,144,0.45);
+    0 0 15px var(--accent-soft);
 }
 
 body.dark-mode #searchInput {
@@ -1086,12 +1083,14 @@ body.dark-mode #searchInput::placeholder {
 
 body.dark-mode .search-icon,
 body.dark-mode .search-clear {
-  color: #9fa89a;
+  color: #d6dfd5;
 }
 
 /* Sidebar dark */
 body.dark-mode .side-nav {
-  background: linear-gradient(180deg, rgba(14,26,22,0.96), rgba(8,16,13,0.92));
+  background:
+    radial-gradient(circle at 0 0, rgba(96,196,144,0.15), transparent 60%),
+    linear-gradient(180deg, #141f1a, #0a1310);
   border-right-color: rgba(111,211,162,0.4);
   box-shadow:
     18px 0 40px rgba(0,0,0,0.9),
@@ -1109,23 +1108,6 @@ body.dark-mode .side-nav-links {
 body.dark-mode .side-nav-link {
   color: #f8f5e8;
   font-weight: 500;
-}
-
-body.dark-mode .side-nav-link:hover {
-  background: linear-gradient(
-    90deg,
-    rgba(96, 196, 144, 0.28),
-    rgba(213, 185, 117, 0.3)
-  );
-  color: #050607;
-  box-shadow:
-    0 0 14px rgba(96, 196, 144, 0.7),
-    0 0 22px rgba(213, 185, 117, 0.7);
-}
-
-body.dark-mode .side-nav-link.active {
-  background: rgba(240,225,195,0.35);
-  color: #1a1c13;
 }
 
 /* Hero + headings */
@@ -1176,18 +1158,20 @@ body.dark-mode .filter-chip {
 }
 
 body.dark-mode .filter-chip.active {
-  background: #7ae0a8;
+  background: var(--accent-color);
   color: #102217;
   border-color: #ffffff;
 }
 
-/* API CARD dark override */
+/* API CARD dark (kotak endpoint) */
 body.dark-mode .api-card {
-  background: rgba(27,36,32,0.96);
-  border-color: rgba(214,193,140,0.65);
+  background:
+    radial-gradient(circle at 0 0, var(--accent-soft), transparent 70%),
+    #1b2622;
+  border-color: rgba(214,193,140,0.7);
   box-shadow:
     0 14px 28px rgba(0,0,0,0.85),
-    0 0 18px rgba(96,196,144,0.35);
+    0 0 18px var(--accent-soft);
 }
 
 body.dark-mode .api-card-title { color: #fff6dd; }
@@ -1206,13 +1190,15 @@ body.dark-mode .fav-toggle-btn {
     0 0 16px rgba(213,185,117,0.45);
 }
 
-/* Request box dark */
+/* REQUEST BOX (kotak saran / request endpoint) */
 body.dark-mode .request-api-box {
-  background: rgba(27,36,32,0.96);
+  background:
+    radial-gradient(circle at 0 0, var(--accent-soft), transparent 70%),
+    #1c2521;
   border-color: rgba(214,193,140,0.7);
   box-shadow:
     0 12px 28px rgba(0,0,0,0.85),
-    0 0 18px rgba(96,196,144,0.35);
+    0 0 18px var(--accent-soft);
 }
 
 body.dark-mode #apiRequestInput {
@@ -1227,28 +1213,39 @@ body.dark-mode .request-api-header p {
   color: #d5ceb8;
 }
 
-/* History & logs dark */
-body.dark-mode .request-history,
-body.dark-mode .logs-section {
-  color: #e4dbc3;
-}
-
-body.dark-mode .logs-console,
-body.dark-mode .code-block {
-  background: rgba(22,30,26,0.96);
+/* Logs & JSON boxes dark */
+body.dark-mode .logs-console {
+  background:
+    radial-gradient(circle at 0 0, var(--accent-soft), transparent 70%),
+    #18231f;
+  border: 1px solid var(--accent-strong);
   color: #f0e9d7;
   box-shadow:
     0 14px 32px rgba(0,0,0,0.9),
-    0 0 18px rgba(96,196,144,0.5);
+    0 0 18px var(--accent-soft);
+}
+
+body.dark-mode .code-block,
+body.dark-mode #apiEndpoint {
+  background:
+    radial-gradient(circle at 0 0, var(--accent-soft), transparent 70%),
+    #18231f;
+  border: 1px solid var(--accent-strong);
+  color: #f0e9d7;
+  box-shadow:
+    0 14px 32px rgba(0,0,0,0.9),
+    0 0 18px var(--accent-soft);
 }
 
 /* Modal dark */
 body.dark-mode .modal-elegant {
-  background: rgba(24,32,28,0.96);
+  background:
+    radial-gradient(circle at 0 0, var(--accent-soft), transparent 70%),
+    #18221e;
   border-color: rgba(214,193,140,0.6);
   box-shadow:
     0 24px 50px rgba(0,0,0,0.95),
-    0 0 22px rgba(96,196,144,0.5);
+    0 0 22px var(--accent-soft);
 }
 
 body.dark-mode .modal-elegant .modal-header {
@@ -1324,4 +1321,132 @@ body.dark-mode .modal-status-line {
   .menu-toggle {
     display: flex;
   }
+}
+
+/* ============================================
+   THEME PRESETS – MENGUBAH SEMUA KOTAK
+   ============================================ */
+
+/* ############ EMERALD GOLD (default) ############ */
+body[data-theme="emerald-gold"] {
+  --accent-color: #60c490;
+  --accent-soft: rgba(96, 196, 144, 0.3);
+  --accent-strong: rgba(96, 196, 144, 0.9);
+}
+
+body[data-theme="emerald-gold"] .search-input-group,
+body[data-theme="emerald-gold"] .api-card,
+body[data-theme="emerald-gold"] .request-api-box,
+body[data-theme="emerald-gold"] .logs-console,
+body[data-theme="emerald-gold"] .code-block,
+body[data-theme="emerald-gold"] #apiEndpoint {
+  /* base berubah via var(--accent-*) */
+}
+
+body[data-theme="emerald-gold"] .filter-chip.active,
+body[data-theme="emerald-gold"] .api-open-btn,
+body[data-theme="emerald-gold"] .fav-toggle-btn {
+  background: #f0e5cc;
+  color: #1d2017;
+  border-color: #d5b975;
+}
+
+/* ############ CYBER GLOW ############ */
+body[data-theme="cyber-glow"] {
+  --accent-color: #78ffd2;
+  --accent-soft: rgba(120, 255, 210, 0.32);
+  --accent-strong: rgba(120, 255, 210, 0.92);
+}
+
+body[data-theme="cyber-glow"] .search-input-group,
+body[data-theme="cyber-glow"] .api-card,
+body[data-theme="cyber-glow"] .request-api-box,
+body[data-theme="cyber-glow"] .logs-console,
+body[data-theme="cyber-glow"] .code-block,
+body[data-theme="cyber-glow"] #apiEndpoint {
+  background: radial-gradient(circle at 0 0, #02151d, #040b0f);
+  border: 1px solid rgba(120, 255, 210, 0.9);
+  box-shadow:
+    0 0 18px rgba(120, 255, 210, 0.9),
+    0 15px 32px rgba(0, 0, 0, 0.95);
+}
+
+body[data-theme="cyber-glow"] .filter-chip,
+body[data-theme="cyber-glow"] .tag-chip {
+  background: rgba(4, 18, 20, 0.96);
+  border-color: rgba(120, 255, 210, 0.85);
+  color: #e4fff8;
+  box-shadow:
+    0 0 12px rgba(120, 255, 210, 0.7),
+    0 8px 20px rgba(0, 0, 0, 0.9);
+}
+
+body[data-theme="cyber-glow"] .filter-chip.active {
+  background: #78ffd2;
+  color: #02120c;
+}
+
+body[data-theme="cyber-glow"] .api-open-btn,
+body[data-theme="cyber-glow"] .fav-toggle-btn {
+  background: #09181c;
+  color: #eaffe8;
+  border-color: rgba(120, 255, 210, 0.9);
+  box-shadow:
+    0 0 16px rgba(120, 255, 210, 0.8),
+    0 10px 24px rgba(0, 0, 0, 0.9);
+}
+
+/* ############ ROYAL AMBER ############ */
+body[data-theme="royal-amber"] {
+  --accent-color: #f3c47a;
+  --accent-soft: rgba(243, 196, 122, 0.3);
+  --accent-strong: rgba(243, 196, 122, 0.92);
+}
+
+body[data-theme="royal-amber"] .search-input-group,
+body[data-theme="royal-amber"] .api-card,
+body[data-theme="royal-amber"] .request-api-box,
+body[data-theme="royal-amber"] .logs-console,
+body[data-theme="royal-amber"] .code-block,
+body[data-theme="royal-amber"] #apiEndpoint {
+  background: radial-gradient(circle at top left, #261b12, #150f0a);
+  border: 1px solid rgba(224, 185, 120, 0.95);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.9),
+    0 0 16px rgba(224, 185, 120, 0.65);
+}
+
+body[data-theme="royal-amber"] .filter-chip,
+body[data-theme="royal-amber"] .tag-chip {
+  background: rgba(46, 32, 20, 0.96);
+  border-color: rgba(224, 185, 120, 0.9);
+  color: #fcefdc;
+}
+
+body[data-theme="royal-amber"] .filter-chip.active {
+  background: #f3c47a;
+  color: #25180b;
+}
+
+body[data-theme="royal-amber"] .api-open-btn,
+body[data-theme="royal-amber"] .fav-toggle-btn {
+  background: #f5e4c6;
+  color: #201710;
+  border-color: #e0b978;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.85),
+    0 0 16px rgba(224, 185, 120, 0.65);
+}
+
+/* RATAS WARNA TEKS DI KOTAK */
+body[data-theme] .api-card-title,
+body[data-theme] .request-api-header h3,
+body[data-theme] .logs-section,
+body[data-theme] .request-history {
+  color: #f8f4ea;
+}
+
+body[data-theme] .api-card-desc,
+body[data-theme] .request-api-header p {
+  color: #ddd5c3;
 }
