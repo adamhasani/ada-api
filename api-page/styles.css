@@ -1450,3 +1450,117 @@ body[data-theme] .api-card-desc,
 body[data-theme] .request-api-header p {
   color: #ddd5c3;
 }
+/* === FIX: SWITCH MODE GELAP SESUAI HTML (label.switch > input + .slider) === */
+
+/* Wrapper switch */
+.theme-switcher .switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+/* Hidden checkbox */
+.theme-switcher .switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Track */
+.theme-switcher .switch .slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #d6d3c8;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  transition: background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* Knob */
+.theme-switcher .switch .slider::before {
+  content: "";
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 3px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Checked state (dark mode ON) */
+.theme-switcher .switch input:checked + .slider {
+  background: #141f1a;
+  border-color: var(--accent-color);
+  box-shadow:
+    0 0 8px var(--accent-soft),
+    0 0 14px var(--accent-strong);
+}
+
+.theme-switcher .switch input:checked + .slider::before {
+  transform: translateX(18px);
+  background: var(--accent-color);
+  box-shadow:
+    0 0 10px var(--accent-strong),
+    0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* Switch di dark-mode supaya tetap kontras */
+body.dark-mode .theme-switcher .switch .slider {
+  background: #2b3631;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* === FIX: TOMBOL CLOSE (X) DI MODAL ENDPOINT KELIATAN JELAS === */
+
+.modal-header .btn-close {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  opacity: 1 !important; /* override Bootstrap */
+}
+
+.modal-header .btn-close i {
+  font-size: 1rem;
+  color: #2b261c;
+}
+
+.modal-header .btn-close:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* Dark mode versi X */
+body.dark-mode .modal-header .btn-close {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+body.dark-mode .modal-header .btn-close i {
+  color: #f9f4e7;
+}
+
+body.dark-mode .modal-header .btn-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Tambahan: ikon kecil di header endpoint biar selalu terang di dark-mode */
+body.dark-mode .endpoint-label-row i,
+body.dark-mode .modal-toolbar i {
+  color: #9fffd1 !important;
+}
+
+/* Tambahan: teks label "Endpoint" di modal agak diterangin */
+body.dark-mode .endpoint-label {
+  color: #f4efd9;
+}
