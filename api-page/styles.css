@@ -1665,3 +1665,133 @@ body.dark-mode .theme-switcher .slider::before {
   background: var(--accent-color) !important;
   box-shadow: 0 0 14px var(--accent-strong);
 }
+/* ============================
+   1. KOTAK SWITCH / MODE TEMA
+   ============================ */
+
+/* Wrapper kotak di sekitar switch (pastikan HTML-nya punya class .theme-switcher) */
+.theme-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);      /* jelas di mode terang */
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+body.dark-mode .theme-switcher {
+  background: rgba(10, 16, 14, 0.96);         /* kontras dengan header gelap */
+  border-color: var(--accent-strong);
+  box-shadow:
+    0 0 12px var(--accent-soft),
+    0 10px 22px rgba(0, 0, 0, 0.85);
+}
+
+/* Track switch – lebih kontras dan ikut tema */
+.theme-switcher .switch .slider {
+  background: rgba(230, 230, 230, 0.98) !important;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+}
+
+/* Knob di tengah vertikal, tidak nyangkut di bawah */
+.theme-switcher .switch .slider::before {
+  top: 50%;
+  bottom: auto;
+  transform: translate(0, -50%);
+}
+
+/* Posisi knob saat checked */
+.theme-switcher .switch input:checked + .slider::before {
+  transform: translate(18px, -50%);
+}
+
+/* Dark mode – track & knob tetap kebaca di atas background gelap */
+body.dark-mode .theme-switcher .switch .slider {
+  background: rgba(12, 20, 17, 0.98) !important;
+  border-color: var(--accent-strong);
+  box-shadow:
+    0 0 10px var(--accent-soft),
+    0 0 18px rgba(0, 0, 0, 0.6);
+}
+
+body.dark-mode .theme-switcher .switch .slider::before {
+  background: var(--accent-color) !important;
+  box-shadow: 0 0 14px var(--accent-strong);
+}
+
+/* ============================
+   2. BINTANG FAVORITE LEBIH JELAS
+   ============================ */
+
+.fav-toggle-btn i {
+  /* bintang keemasan di mode terang */
+  color: #b5892f;
+  font-weight: 700;
+}
+
+.fav-toggle-btn.favorited i {
+  color: #d5b975;
+}
+
+body.dark-mode .fav-toggle-btn i {
+  /* bintang terang di mode gelap */
+  color: #f9e29a;
+}
+
+/* ============================
+   3. TOMBOL SILANG (X) DI MODAL
+   ============================ */
+
+/* buang background-image default Bootstrap dan bikin X sendiri */
+.modal-header .btn-close {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.18),
+    0 0 10px rgba(255, 255, 255, 0.8);
+  opacity: 1 !important;
+  background-image: none !important; /* matikan ikon SVG bawaan */
+}
+
+/* X di tengah pakai pseudo-element */
+.modal-header .btn-close::before {
+  content: "×";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #000000;
+}
+
+.modal-header .btn-close:hover {
+  background: rgba(245, 245, 245, 1) !important;
+}
+
+/* Dark mode – tombol X kontras di atas header gelap */
+body.dark-mode .modal-header .btn-close {
+  background: rgba(8, 13, 11, 0.98) !important;
+  border-color: var(--accent-strong);
+  box-shadow:
+    0 0 12px var(--accent-strong),
+    0 0 4px rgba(0, 0, 0, 0.9);
+}
+
+body.dark-mode .modal-header .btn-close::before {
+  color: #ffffff;
+}
+
+/* Supaya X di area endpoint/modal SELALU kebaca */
+body.dark-mode .modal-elegant .modal-header {
+  position: relative;
+  z-index: 1;
+}
