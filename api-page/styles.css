@@ -1,9 +1,9 @@
 :root {
   --bg-body-light: #f5f1e8;
-  --bg-body-dark: #070b09;
+  --bg-body-dark: #0d1612;
 
   --text-main-light: #1f2522;
-  --text-main-dark: #f4f0e5;
+  --text-main-dark: #f6f3e8;
 
   --accent-color: #60c490;   /* default emerald */
   --accent-soft: rgba(96, 196, 144, 0.22);
@@ -30,12 +30,6 @@ body {
 
 a {
   text-decoration: none;
-}
-
-/* DARK MODE ROOT (basic, akan di-overwrite di bawah) */
-body.dark-mode {
-  background: var(--bg-body-dark);
-  color: var(--text-main-dark);
 }
 
 /* AMBIENT CURSOR GLOW */
@@ -685,6 +679,7 @@ body.dark-mode .cursor-glow {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   white-space: nowrap;
+  border: 1px solid transparent;
 }
 
 .http-get { background: rgba(88, 156, 110, 0.18); color: #26402d; }
@@ -977,59 +972,38 @@ body.dark-mode .cursor-glow {
 }
 
 /* ==============================
-   DARK MODE OVERRIDES – FUTURISTIC GLOW
+   DARK MODE – BRIGHT & GLOW (FINAL B)
    ============================== */
 
 body.dark-mode {
   background:
-    radial-gradient(circle at top left, rgba(96,196,144,0.24), transparent 55%),
-    radial-gradient(circle at bottom right, rgba(213,185,117,0.22), transparent 55%),
-    #05080a;
-  color: #e9f5ee;
+    radial-gradient(circle at top left, rgba(96,196,144,0.28), transparent 62%),
+    radial-gradient(circle at bottom right, rgba(213,185,117,0.26), transparent 62%),
+    #0d1612;
+  color: #f6f3e8;
 }
 
-/* Header glass */
+/* Header */
 body.dark-mode .main-header {
-  background: rgba(5, 10, 12, 0.96);
-  border-bottom-color: rgba(111, 211, 162, 0.3);
+  background: rgba(12,18,15,0.92);
+  border-bottom: 1px solid rgba(111,211,162,0.4);
   box-shadow:
-    0 12px 30px rgba(0, 0, 0, 0.9),
-    0 0 22px rgba(96, 196, 144, 0.45);
+    0 10px 24px rgba(0,0,0,0.7),
+    0 0 16px rgba(96,196,144,0.40);
 }
 
 body.dark-mode .header-title {
   color: #e4dcc3;
 }
 
-/* Menu toggle (burger) */
+/* Menu toggle */
 body.dark-mode .menu-toggle {
-  display: flex;
   border-color: rgba(96, 196, 144, 0.7);
   background: radial-gradient(circle at 30% 20%, #0b1913, #050908);
   color: #f4ecd4;
   box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.9),
     0 0 16px rgba(96, 196, 144, 0.7);
-}
-
-/* Search bar */
-body.dark-mode .search-input-group {
-  background: rgba(6, 13, 11, 0.96);
-  border-color: rgba(96, 196, 144, 0.65);
-  box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.95),
-    0 0 20px rgba(96, 196, 144, 0.65);
-}
-
-body.dark-mode #searchInput {
-  color: #f5f2e7;
-}
-body.dark-mode #searchInput::placeholder {
-  color: #8a9388;
-}
-body.dark-mode .search-icon,
-body.dark-mode .search-clear {
-  color: #9fa89a;
 }
 
 /* Theme controls */
@@ -1051,26 +1025,48 @@ body.dark-mode .preset-select {
     0 0 18px rgba(96, 196, 144, 0.6);
 }
 
-/* Sidebar glass + glow */
-body.dark-mode .side-nav {
-  background:
-    linear-gradient(180deg, rgba(3, 10, 8, 0.98), rgba(1, 5, 4, 0.96));
-  border-right-color: rgba(96, 196, 144, 0.55);
+/* Search dark */
+body.dark-mode .search-input-group {
+  background: rgba(15,22,19,0.96);
+  border-color: rgba(111,211,162,0.55);
   box-shadow:
-    18px 0 46px rgba(0, 0, 0, 0.95),
-    0 0 28px rgba(96, 196, 144, 0.5);
+    0 10px 26px rgba(0,0,0,0.8),
+    0 0 15px rgba(96,196,144,0.45);
+}
+
+body.dark-mode #searchInput {
+  color: #f4ede0;
+}
+
+body.dark-mode #searchInput::placeholder {
+  color: #8a9388;
+}
+
+body.dark-mode .search-icon,
+body.dark-mode .search-clear {
+  color: #9fa89a;
+}
+
+/* Sidebar dark */
+body.dark-mode .side-nav {
+  background: linear-gradient(180deg, rgba(10,22,18,0.96), rgba(6,14,11,0.92));
+  border-right-color: rgba(111,211,162,0.4);
+  box-shadow:
+    18px 0 40px rgba(0,0,0,0.9),
+    0 0 22px rgba(96,196,144,0.45);
 }
 
 body.dark-mode .side-nav-links {
-  background: rgba(3, 8, 7, 0.96);
-  border-color: rgba(213, 185, 117, 0.9);
+  background: rgba(8,16,13,0.96);
+  border-color: rgba(213,185,117,0.9);
   box-shadow:
-    0 24px 48px rgba(0, 0, 0, 0.95),
-    0 0 26px rgba(96, 196, 144, 0.55);
+    0 24px 48px rgba(0,0,0,0.9),
+    0 0 26px rgba(96,196,144,0.5);
 }
 
 body.dark-mode .side-nav-link {
-  color: #f8f1dd;
+  color: #f8f5e8;
+  font-weight: 500;
 }
 
 body.dark-mode .side-nav-link:hover {
@@ -1086,31 +1082,20 @@ body.dark-mode .side-nav-link:hover {
 }
 
 body.dark-mode .side-nav-link.active {
-  background: linear-gradient(
-    90deg,
-    rgba(96, 196, 144, 0.4),
-    rgba(213, 185, 117, 0.5)
-  );
-  color: #050607;
-}
-
-body.dark-mode .nav-collapse-btn {
-  background: radial-gradient(circle at 20% 0%, #19261f, #060b09);
-  color: #f4e7c8;
+  background: rgba(240,225,195,0.35);
+  color: #1a1c13;
 }
 
 /* Hero + headings */
 body.dark-mode .hero-title {
-  color: #f9f4e7;
-  text-shadow:
-    0 0 18px rgba(115, 240, 177, 0.65),
-    0 0 38px rgba(42, 122, 87, 0.95);
+  color: #faf6e7;
+  text-shadow: 0 0 18px rgba(120,240,185,.7);
 }
 
 body.dark-mode .hero-description,
 body.dark-mode .section-description,
 body.dark-mode .section-subtitle {
-  color: #c9c0a7;
+  color: #dcd5c1;
 }
 
 body.dark-mode .section-title-oldmoney,
@@ -1121,7 +1106,7 @@ body.dark-mode .section-title-small {
     0 0 30px rgba(17, 186, 134, 0.9);
 }
 
-/* Chips, buttons, tags */
+/* Tags & buttons */
 body.dark-mode .hero-btn,
 body.dark-mode #sendApiRequest {
   background: radial-gradient(circle at 20% 0%, #1d3126, #080f0c);
@@ -1133,41 +1118,73 @@ body.dark-mode #sendApiRequest {
 }
 
 body.dark-mode .tag-chip {
-  background: rgba(7, 12, 10, 0.96);
-  border-color: rgba(214, 193, 140, 0.7);
-  color: #f3ead3;
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.9),
-    0 0 16px rgba(96, 196, 144, 0.5);
+  background: rgba(20,30,25,0.9);
+  color: #f7f1dd;
+  border-color: rgba(214,193,140,0.75);
 }
 
-/* API cards */
+/* API CARD dark base */
 body.dark-mode .api-card {
-  background: radial-gradient(circle at top left, #0a1310, #05090b);
-  border-color: rgba(214, 193, 140, 0.7);
+  background: rgba(18,25,22,0.9);
+  border: 1px solid rgba(214,193,140,0.65);
   box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.95),
-    0 0 22px rgba(96, 196, 144, 0.45);
+    0 14px 28px rgba(0,0,0,0.85),
+    0 0 18px rgba(96,196,144,0.45);
 }
 
-body.dark-mode .api-card:hover {
+/* teks dalam card */
+body.dark-mode .api-card-title { color: #fff6dd; }
+body.dark-mode .api-card-desc  { color: #e7dfc7; }
+body.dark-mode .api-card-footer { color: #d8cfb8; }
+
+/* HTTP BADGE – TERANG */
+body.dark-mode .http-badge {
+  color: #0e120e !important;
+  font-weight: 600;
+  text-shadow: none;
+  border: 1px solid rgba(255,255,255,0.35);
+}
+
+body.dark-mode .http-get    { background: rgba(121,230,170,0.85); }
+body.dark-mode .http-post   { background: rgba(230,205,150,0.85); }
+body.dark-mode .http-put    { background: rgba(150,200,255,0.85); }
+body.dark-mode .http-delete { background: rgba(255,140,140,0.85); }
+
+/* ENDPOINT STATUS – TERANG */
+body.dark-mode .endpoint-status-pill.status-ok {
+  background: rgba(96,196,144,1);
+  color: #102217;
+  border-color: rgba(255,255,255,0.65);
+  font-weight: 600;
+}
+
+body.dark-mode .endpoint-status-pill.status-error {
+  background: rgba(255,90,90,1);
+  color: #200b0b;
+  border-color: rgba(255,255,255,0.65);
+  font-weight: 600;
+}
+
+body.dark-mode .endpoint-status-pill.status-unknown {
+  background: rgba(214,193,140,0.8);
+  color: #2c2414;
+  border-color: rgba(255,255,255,0.6);
+  font-weight: 600;
+}
+
+/* Buttons in cards */
+body.dark-mode .api-open-btn,
+body.dark-mode .fav-toggle-btn {
+  background: rgba(230,225,210,0.9);
+  color: #1b1c17;
+  border-color: var(--gold-color);
+  font-weight: 600;
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.98),
-    0 0 26px rgba(96, 196, 144, 0.65);
+    0 8px 20px rgba(0,0,0,0.7),
+    0 0 16px rgba(213,185,117,0.55);
 }
 
-body.dark-mode .api-card-title {
-  color: #f6edd7;
-}
-
-body.dark-mode .api-card-desc {
-  color: #d0c6ab;
-}
-
-body.dark-mode .api-card-footer {
-  color: #c0b7a0;
-}
-
+/* Filter chips */
 body.dark-mode .filter-chip {
   background: rgba(7, 12, 10, 0.98);
   border-color: rgba(214, 193, 140, 0.7);
@@ -1183,30 +1200,18 @@ body.dark-mode .filter-chip.active {
   color: #0b1110;
 }
 
-/* Buttons in cards */
-body.dark-mode .api-open-btn,
-body.dark-mode .fav-toggle-btn {
-  background: radial-gradient(circle at 30% 0%, #141f1a, #05090a);
-  color: #f3e7d0;
-  border-color: rgba(214, 193, 140, 0.8);
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.95),
-    0 0 16px rgba(96, 196, 144, 0.5);
-}
-
 /* Request box */
 body.dark-mode .request-api-box {
-  background: radial-gradient(circle at top, #101a15, #050908);
-  border-color: rgba(214, 193, 140, 0.8);
+  background: rgba(22,28,25,0.92);
+  border-color: rgba(214,193,140,0.7);
   box-shadow:
-    0 14px 32px rgba(0, 0, 0, 0.96),
-    0 0 22px rgba(96, 196, 144, 0.6);
+    0 12px 28px rgba(0,0,0,0.8),
+    0 0 18px rgba(96,196,144,0.45);
 }
 
 body.dark-mode #apiRequestInput {
-  background: rgba(7, 13, 11, 0.96);
-  color: #f4ecd4;
-  border-color: rgba(214, 193, 140, 0.6);
+  background: rgba(18,26,23,0.92);
+  color: #f7f1dd;
 }
 
 body.dark-mode .request-api-header h3 {
@@ -1214,7 +1219,7 @@ body.dark-mode .request-api-header h3 {
 }
 
 body.dark-mode .request-api-header p {
-  color: #cbc2aa;
+  color: #d5ceb8;
 }
 
 /* History & logs */
@@ -1223,21 +1228,22 @@ body.dark-mode .logs-section {
   color: #e4dbc3;
 }
 
-body.dark-mode .logs-console {
-  background: radial-gradient(circle at top left, #0a1510, #040607);
-  color: #f5efe3;
+body.dark-mode .logs-console,
+body.dark-mode .code-block {
+  background: rgba(20,28,24,0.95);
+  color: #f0e9d7;
   box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.98),
-    0 0 22px rgba(96, 196, 144, 0.7);
+    0 14px 32px rgba(0,0,0,0.9),
+    0 0 18px rgba(96,196,144,0.5);
 }
 
-/* Modal glass */
+/* Modal */
 body.dark-mode .modal-elegant {
-  background: radial-gradient(circle at 20% 0%, #151f1a, #050707);
-  border-color: rgba(214, 193, 140, 0.7);
+  background: rgba(20,26,23,0.94);
+  border-color: rgba(214,193,140,0.6);
   box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.98),
-    0 0 26px rgba(96, 196, 144, 0.7);
+    0 24px 50px rgba(0,0,0,0.95),
+    0 0 22px rgba(96,196,144,0.6);
 }
 
 body.dark-mode .modal-elegant .modal-header {
@@ -1261,16 +1267,7 @@ body.dark-mode .modal-status-line {
   color: #c4baa5;
 }
 
-/* Code blocks */
-body.dark-mode .code-block {
-  background: radial-gradient(circle at top, #0a1510, #020404);
-  color: #f4efe3;
-  box-shadow:
-    0 16px 40px rgba(0, 0, 0, 0.98),
-    0 0 22px rgba(96, 196, 144, 0.65);
-}
-
-/* LAYOUT SHIFT FOR DESKTOP */
+/* LAYOUT: DESKTOP OFFSET BY SIDEBAR */
 @media (min-width: 992px) {
   .main-header,
   .hero-section,
