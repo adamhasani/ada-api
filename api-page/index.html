@@ -44,6 +44,9 @@
       <a href="#apis" class="side-nav-link">
         <i class="fas fa-plug"></i><span>API</span>
       </a>
+      <a href="#request" class="side-nav-link">
+        <i class="fas fa-lightbulb"></i><span>Request API</span>
+      </a>
       <a href="#history" class="side-nav-link">
         <i class="fas fa-clock-rotate-left"></i><span>Riwayat</span>
       </a>
@@ -141,21 +144,6 @@
           <span class="tag-chip"><i class="fas fa-lock me-1"></i> Secure by design</span>
           <span class="tag-chip"><i class="fas fa-moon me-1"></i> Dark / Light aware</span>
         </div>
-
-        <!-- Request API Box -->
-        <div class="request-api-box">
-          <div class="request-api-header">
-            <h3>Request Endpoint Baru</h3>
-            <p>Tulis ide API baru, kirim langsung ke WhatsApp.</p>
-          </div>
-          <textarea
-            id="apiRequestInput"
-            placeholder="Contoh: tolong tambahin endpoint /ai/stable-diffusion dengan parameter prompt, style, seed…"
-          ></textarea>
-          <button id="sendApiRequest">
-            <i class="fas fa-paper-plane me-1"></i> Kirim ke WhatsApp
-          </button>
-        </div>
       </div>
 
       <div class="hero-visual reveal">
@@ -195,11 +183,40 @@
       </p>
 
       <div id="apiFilters" class="api-filters">
-        <!-- Filter chips diisi oleh script.js (All, Favorites, per kategori) -->
+        <!-- Filter chips diisi oleh script.js -->
       </div>
 
       <div id="apiContent" class="api-content">
-        <!-- Kartu endpoint dibangun dinamis dari settings.json -->
+        <!-- Kartu endpoint dari settings.json -->
+      </div>
+    </section>
+
+    <!-- REQUEST API (PINDAH KE BAWAH) -->
+    <section id="request" class="request-section reveal">
+      <div class="section-header-line small">
+        <div>
+          <h3 class="section-title-small">
+            <i class="fas fa-lightbulb me-1"></i> Request Endpoint Baru
+          </h3>
+          <p class="section-subtitle">
+            Kirim ide endpoint langsung ke WhatsApp untuk dipertimbangkan.
+          </p>
+        </div>
+        <div class="gold-divider thin"></div>
+      </div>
+
+      <div class="request-api-box">
+        <div class="request-api-header">
+          <h3>Tambah Endpoint</h3>
+          <p>Tulis nama endpoint, kebutuhan parameter, dan contoh respons yang diinginkan.</p>
+        </div>
+        <textarea
+          id="apiRequestInput"
+          placeholder="Contoh: /ai/stable-diffusion — parameter: prompt, style, seed, steps…"
+        ></textarea>
+        <button id="sendApiRequest">
+          <i class="fas fa-paper-plane me-1"></i> Kirim ke WhatsApp
+        </button>
       </div>
     </section>
 
