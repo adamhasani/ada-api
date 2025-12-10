@@ -1,32 +1,59 @@
 /* ======================================
-   ROOT & GLOBAL
+   ROOT & THEME VARIABLES
    ====================================== */
+/* Palette default (mode terang, tanpa tema) */
 :root {
   --bg-body: #f4efe3;
   --bg-panel: rgba(255, 255, 255, 0.96);
   --border-soft: rgba(27, 38, 32, 0.16);
   --text-main: #262520;
   --text-soft: #6a675b;
+
   --accent-color: #4f9c6b;
-  --accent-soft: rgba(79, 156, 107, 0.18);
+  --accent-soft: rgba(79, 156, 107, 0.1);
+  --accent-strong: rgba(79, 156, 107, 0.85);
+  --gold-color: #cba45c;
+}
+
+/* ========= TEMA DI MODE TERANG ========= */
+/* background halaman tetap cream, tapi panel/kartu ikut tema */
+
+body:not(.dark-mode)[data-theme="emerald-gold"] {
+  --bg-panel: rgba(244, 252, 247, 0.98);
+  --accent-color: #4f9c6b;
+  --accent-soft: rgba(79, 156, 107, 0.12);
   --accent-strong: rgba(79, 156, 107, 0.9);
   --gold-color: #cba45c;
 }
 
-/* TEMA: NOIR */
-body[data-theme="noir"] {
-  --bg-body: #0c1011;
-  --bg-panel: rgba(20, 25, 28, 0.92);
-  --text-main: #f6f3ea;
-  --text-soft: #b9b3a4;
+body:not(.dark-mode)[data-theme="noir"] {
+  --bg-panel: rgba(245, 245, 247, 0.98);
   --accent-color: #79d2a2;
-  --accent-soft: rgba(121, 210, 162, 0.18);
+  --accent-soft: rgba(121, 210, 162, 0.15);
   --accent-strong: rgba(121, 210, 162, 0.9);
-  --gold-color: #f1d28a;
+  --gold-color: #bfa780;
 }
-/* TEMA: EMERALD GOLD */
-body[data-theme="emerald-gold"] {
-  --bg-body: #101712;
+
+body:not(.dark-mode)[data-theme="royal-amber"] {
+  --bg-panel: rgba(252, 245, 233, 0.98);
+  --accent-color: #f3c47a;
+  --accent-soft: rgba(243, 196, 122, 0.18);
+  --accent-strong: rgba(243, 196, 122, 0.9);
+  --gold-color: #f0b95b;
+}
+
+body:not(.dark-mode)[data-theme="cyber-glow"] {
+  --bg-panel: rgba(241, 250, 249, 0.98);
+  --accent-color: #78ffd2;
+  --accent-soft: rgba(120, 255, 210, 0.2);
+  --accent-strong: rgba(120, 255, 210, 0.9);
+  --gold-color: #84ffea;
+}
+
+/* ========= TEMA DI MODE GELAP ========= */
+/* full dark, benar-benar mengikuti tema */
+
+body.dark-mode[data-theme="emerald-gold"] {
   --bg-panel: rgba(21, 29, 23, 0.95);
   --text-main: #f7f2e7;
   --text-soft: #c2b9a6;
@@ -35,9 +62,18 @@ body[data-theme="emerald-gold"] {
   --accent-strong: rgba(103, 210, 143, 0.92);
   --gold-color: #f3c47a;
 }
-/* TEMA: ROYAL AMBER (IVORY) */
-body[data-theme="royal-amber"] {
-  --bg-body: #120d09;
+
+body.dark-mode[data-theme="noir"] {
+  --bg-panel: rgba(20, 25, 28, 0.92);
+  --text-main: #f6f3ea;
+  --text-soft: #b9b3a4;
+  --accent-color: #79d2a2;
+  --accent-soft: rgba(121, 210, 162, 0.18);
+  --accent-strong: rgba(121, 210, 162, 0.9);
+  --gold-color: #f1d28a;
+}
+
+body.dark-mode[data-theme="royal-amber"] {
   --bg-panel: radial-gradient(circle at top left, #261b12, #150f0a);
   --text-main: #fcefdc;
   --text-soft: #e4cfaa;
@@ -46,9 +82,8 @@ body[data-theme="royal-amber"] {
   --accent-strong: rgba(243, 196, 122, 0.92);
   --gold-color: #f8d894;
 }
-/* TEMA: CYBER GLOW */
-body[data-theme="cyber-glow"] {
-  --bg-body: #02080b;
+
+body.dark-mode[data-theme="cyber-glow"] {
   --bg-panel: rgba(7, 16, 25, 0.96);
   --text-main: #e7fff9;
   --text-soft: #b9f4e6;
@@ -59,7 +94,7 @@ body[data-theme="cyber-glow"] {
 }
 
 /* ======================================
-   RESET & BASE
+   RESET
    ====================================== */
 *,
 *::before,
@@ -73,15 +108,19 @@ body {
   padding: 0;
 }
 
+/* BASE BODY (background cream) */
 body {
   min-height: 100vh;
   font-family: "Outfit", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
   background: radial-gradient(circle at top left, #faf3e4, #e3d8c4);
-  /* OVERRIDE background jika ada variabel tema aktif */
-  background: var(--bg-body);
   color: var(--text-main);
   display: flex;
+}
+
+/* DARK MODE – background gelap */
+body.dark-mode {
+  background: radial-gradient(circle at top left, #030605, #070b0a);
 }
 
 /* ======================================
@@ -263,6 +302,7 @@ main {
   flex: 1;
 }
 
+/* wrapper untuk konten kanan */
 body > main,
 body > .main-wrapper {
   flex: 1;
@@ -307,10 +347,8 @@ body > .main-wrapper {
   border-bottom: 1px solid rgba(27, 38, 32, 0.09);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  transition: background 0.3s, border-color 0.3s;
 }
 
-/* FIX: Header adaptif dark mode */
 body.dark-mode .main-header {
   background: rgba(10, 14, 11, 0.9);
   border-bottom-color: rgba(201, 189, 154, 0.22);
@@ -322,12 +360,11 @@ body.dark-mode .main-header {
   gap: 0.75rem;
 }
 
-/* FIX: Warna title menggunakan variabel agar terlihat di Dark Mode */
 .header-title {
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.22em;
-  color: var(--text-main); /* Menggunakan variabel */
+  color: #4a4840;
   white-space: nowrap;
 }
 
@@ -343,18 +380,17 @@ body.dark-mode .main-header {
   gap: 1rem;
 }
 
-/* FIX: Tombol menu (mobile) adaptif */
 .menu-toggle {
   display: none;
   border-radius: 999px;
-  border: 1px solid var(--border-soft);
-  background: var(--bg-panel);
+  border: 1px solid rgba(27, 38, 32, 0.18);
+  background: rgba(255, 255, 255, 0.9);
   width: 36px;
   height: 36px;
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
-  color: var(--text-main);
+  color: #2f2c24;
 }
 
 @media (max-width: 991.98px) {
@@ -420,7 +456,12 @@ body.dark-mode #searchInput {
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.75rem;
-  color: var(--text-soft); /* FIX: Pakai variabel */
+  color: #5a5648;
+}
+
+body.dark-mode .theme-toggle-group,
+body.dark-mode .preset-group {
+  color: #c6c0ac;
 }
 
 .theme-label {
@@ -520,7 +561,7 @@ body.dark-mode .preset-select {
   font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--text-soft);
+  color: #908b7c;
   margin-bottom: 0.4rem;
 }
 
@@ -539,16 +580,15 @@ body.dark-mode .preset-select {
   align-items: center;
   gap: 0.4rem;
   font-size: 0.78rem;
-  color: var(--text-soft);
+  color: #6e6a5d;
 }
 
 .badge-pill {
   border-radius: 999px;
-  border: 1px solid var(--border-soft);
+  border: 1px solid rgba(27, 38, 32, 0.22);
   padding: 0.16rem 0.7rem;
   font-size: 0.75rem;
-  background: var(--bg-panel);
-  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .hero-meta-text {
@@ -562,7 +602,7 @@ body.dark-mode .preset-select {
 .hero-description {
   margin-top: 0.85rem;
   font-size: 0.9rem;
-  color: var(--text-soft);
+  color: #5f5b50;
 }
 
 .hero-btn {
@@ -580,12 +620,6 @@ body.dark-mode .preset-select {
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
 }
 
-body.dark-mode .hero-btn {
-  background: #f7f2e7;
-  color: #111714;
-  border-color: #f7f2e7;
-}
-
 .hero-btn i {
   font-size: 0.95rem;
 }
@@ -600,10 +634,10 @@ body.dark-mode .hero-btn {
 .tag-chip {
   font-size: 0.78rem;
   border-radius: 999px;
-  border: 1px solid var(--border-soft);
+  border: 1px solid rgba(27, 38, 32, 0.2);
   padding: 0.16rem 0.6rem;
-  background: var(--bg-panel);
-  color: var(--text-soft);
+  background: rgba(255, 255, 255, 0.9);
+  color: #4a453a;
 }
 
 /* BANNER */
@@ -699,8 +733,8 @@ body.dark-mode .hero-btn {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   margin: 0;
-  /* FIX: Menggunakan variabel --text-main supaya tidak mati di Dark Mode */
-  color: var(--text-main);
+  font-weight: 600;
+  color: #18130d; /* lebih gelap biar kebaca di mode terang */
 }
 
 .section-title-oldmoney {
@@ -711,27 +745,37 @@ body.dark-mode .hero-btn {
   font-size: 1rem;
 }
 
+body.dark-mode .section-title-oldmoney,
+body.dark-mode .section-title-small {
+  color: #f7f0de;
+}
+
 .section-subtitle {
   margin: 0.3rem 0 0;
   font-size: 0.82rem;
+  color: #4f4737;
+}
+
+.section-description {
+  margin-top: 0.7rem;
+  font-size: 0.85rem;
+  color: #4f4737;
+}
+
+body.dark-mode .section-subtitle,
+body.dark-mode .section-description {
   color: var(--text-soft);
 }
 
 .gold-divider {
   flex: 0 0 120px;
   height: 2px;
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0), var(--gold-color), rgba(0, 0, 0, 0));
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0), #b3904a, rgba(0, 0, 0, 0));
 }
 
 .gold-divider.thin {
   flex-basis: 80px;
   height: 1px;
-}
-
-.section-description {
-  margin-top: 0.7rem;
-  font-size: 0.85rem;
-  color: var(--text-soft);
 }
 
 /* ======================================
@@ -744,29 +788,21 @@ body.dark-mode .hero-btn {
   gap: 0.4rem;
 }
 
-/* FIX: Filter Chip menggunakan variabel agar adaptif */
 .filter-chip {
   border-radius: 999px;
-  border: 1px solid var(--border-soft);
+  border: 1px solid rgba(27, 38, 32, 0.18);
   padding: 0.18rem 0.7rem;
   font-size: 0.8rem;
-  background: var(--bg-panel);
-  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.96);
+  color: #3a362d;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
 }
 
 .filter-chip.active {
-  background: #111714;
+  background: rgba(16, 31, 24, 0.95);
   color: #f5eee0;
   border-color: var(--accent-color);
 }
-/* Jika dark mode, active chip jadi terang */
-body.dark-mode .filter-chip.active {
-  background: #f5eee0;
-  color: #111714;
-}
-
 
 /* ======================================
    API CONTENT & CARD
@@ -788,7 +824,7 @@ body.dark-mode .filter-chip.active {
 
 .api-card:hover {
   transform: translateY(-4px);
-  border-color: var(--gold-color);
+  border-color: rgba(184, 155, 87, 0.7);
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
 }
 
@@ -884,7 +920,7 @@ body.dark-mode .filter-chip.active {
   align-items: center;
   margin-top: 0.7rem;
   font-size: 0.78rem;
-  color: var(--text-soft);
+  color: #8a8475;
   gap: 0.4rem;
 }
 
@@ -904,21 +940,21 @@ body.dark-mode .filter-chip.active {
 
 .api-open-btn {
   border-radius: 999px;
-  border: 1px solid var(--border-soft);
+  border: 1px solid rgba(27, 38, 32, 0.2);
   padding: 0.25rem 0.9rem;
   font-size: 0.78rem;
-  background: var(--bg-panel);
-  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.96);
+  color: #2f2c24;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 .fav-toggle-btn {
   border-radius: 999px;
-  border: 1px solid var(--border-soft);
+  border: 1px solid rgba(27, 38, 32, 0.2);
   padding: 0.18rem 0.62rem;
-  background: var(--bg-panel);
+  background: rgba(255, 255, 255, 0.96);
   font-size: 0.76rem;
-  color: var(--text-soft);
+  color: #b3aa95;
 }
 
 .fav-toggle-btn i {
@@ -966,18 +1002,17 @@ body.dark-mode .filter-chip.active {
   height: 84px;
   padding: 0.75rem;
   border-radius: 12px;
-  border: 1px solid var(--border-soft);
-  background: rgba(255, 255, 255, 0.5); /* Semi transparent supaya bg panel kelihatan */
+  border: 1px solid rgba(27, 38, 32, 0.18);
+  background: rgba(255, 255, 255, 0.96);
   resize: none;
   font-size: 0.85rem;
   outline: none;
-  color: #111;
 }
 
 body.dark-mode #apiRequestInput {
-  background: rgba(0,0,0,0.3);
+  background: rgba(10, 14, 11, 0.98);
+  border-color: rgba(151, 213, 172, 0.7);
   color: #f5efe2;
-  border-color: rgba(151, 213, 172, 0.4);
 }
 
 #sendApiRequest {
@@ -988,11 +1023,6 @@ body.dark-mode #apiRequestInput {
   font-size: 0.82rem;
   background: #111714;
   color: #f7f3e7;
-}
-
-body.dark-mode #sendApiRequest {
-    background: #f7f3e7;
-    color: #111714;
 }
 
 /* ======================================
@@ -1019,14 +1049,13 @@ body.dark-mode #sendApiRequest {
 
 .history-name {
   font-weight: 500;
-  color: var(--text-main);
 }
 
 .history-path {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Courier New", monospace;
   font-size: 0.76rem;
-  color: var(--text-soft);
+  color: #868176;
 }
 
 /* ======================================
@@ -1061,8 +1090,6 @@ body.dark-mode #sendApiRequest {
   overflow: hidden;
   background: radial-gradient(circle at top left, #131711, #050706);
   border: 1px solid rgba(234, 214, 171, 0.8);
-  /* Modal selalu tema gelap, jadi text kita paksa terang di sini */
-  color: #f3ebd4;
 }
 
 .modal-header {
@@ -1121,7 +1148,7 @@ body.dark-mode #sendApiRequest {
 .btn-close i {
   position: relative;
   z-index: 2;
-  color: #f9f4e7; /* Selalu terang di modal elegant */
+  color: #2e2a20;
   font-size: 1.1rem;
 }
 
@@ -1130,8 +1157,19 @@ body.dark-mode #sendApiRequest {
   position: absolute;
   inset: 3px;
   border-radius: 999px;
-  background: rgba(8, 12, 10, 0.95);
+  background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .btn-close::before {
+  background: rgba(8, 12, 10, 0.95);
+  box-shadow:
+    0 0 12px rgba(96, 196, 144, 0.7),
+    0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+body.dark-mode .btn-close i {
+  color: #f9f4e7;
 }
 
 /* CODE BLOCK / ENDPOINT BOX */
@@ -1154,21 +1192,19 @@ body.dark-mode #sendApiRequest {
   font-size: 0.78rem;
 }
 
-/* FIX: Warna Label Endpoint di Modal */
 .endpoint-label {
   font-weight: 500;
-  color: #d8d3c5; /* Warna terang */
+  color: #e0d5ba;
 }
 
 .endpoint-block {
   margin-bottom: 0.45rem;
 }
 
-/* FIX: Warna status line di Modal */
 .modal-status-line {
   margin: 0.25rem 0 0.45rem;
   font-size: 0.78rem;
-  color: #9f9a8a; /* Warna terang */
+  color: #ccc2aa;
 }
 
 .modal-loading {
@@ -1181,7 +1217,7 @@ body.dark-mode #sendApiRequest {
 
 .modal-loading p {
   font-size: 0.8rem;
-  color: #9f9a8a; /* Warna terang */
+  color: #d0c7af;
   margin: 0;
 }
 
@@ -1189,7 +1225,7 @@ body.dark-mode #sendApiRequest {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(0, 0, 0, 0.12);
   border-top-color: var(--accent-color);
   animation: spin 0.8s linear infinite;
 }
@@ -1198,6 +1234,23 @@ body.dark-mode #sendApiRequest {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* JSON highlight (kalau mau dipakai manual) */
+.json-key {
+  color: #ffd57a;
+}
+.json-string {
+  color: #7ce8a6;
+}
+.json-number {
+  color: #9ad0ff;
+}
+.json-boolean {
+  color: #ff9f9f;
+}
+.json-null {
+  color: #f6b3ff;
 }
 
 /* ======================================
