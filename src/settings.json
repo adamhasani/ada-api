@@ -42,13 +42,12 @@
       "items": [
         {
           "name": "YouTube MP3",
-          "desc": "Download Audio YouTube (Auto Search/Link).",
-          "path": "/api/download/ytmp3?q=dj%20malam%20pagi",
+          "desc": "Download Audio YouTube via Link.",
+          "path": "/api/download/ytmp3?url=https://youtu.be/na8A4-fapww?si=sFu7VY0yzsUyLeTg",
           "status": "ready",
           "method": "GET",
           "params": {
-            "q": "Judul lagu atau Link YouTube",
-            "url": "Opsional (bisa pakai parameter 'q' saja)"
+            "url": "Link YouTube (Contoh: https://youtu.be/...)"
           }
         }
       ]
