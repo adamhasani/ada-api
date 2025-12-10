@@ -40,10 +40,14 @@ document.addEventListener("DOMContentLoaded", () => {
     modalLoading: document.getElementById("modalLoading"),
     apiResponseContent: document.getElementById("apiResponseContent"),
     copyEndpointBtn: document.getElementById("copyEndpointBtn"),
-    copyCurlBtn: document.getElementById("copyCurlBtn"),
+    copyCurlBtn: document.getElementById("copyCurlBtn")
   };
 
-  const modalInstance = DOM.modalEl ? new bootstrap.Modal(DOM.modalEl) : null;
+  // bootstrap modal (kalau ada)
+  let modalInstance = null;
+  if (DOM.modalEl && window.bootstrap && bootstrap.Modal) {
+    modalInstance = bootstrap.Modal.getOrCreateInstance(DOM.modalEl);
+  }
 
   // ================================
   // STATE
@@ -55,7 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let themeMode = null;                          // 'light' | 'dark'
   let themePresetInternal = null;               // 'emerald-gold', 'noir', ...
 
-  // fallback kalau settings.json gagal dimuat
   const fallbackCategories = [
     {
       name: "Contoh",
@@ -65,10 +68,10 @@ document.addEventListener("DOMContentLoaded", () => {
           desc: "Contoh endpoint kalau settings.json belum terbaca.",
           method: "GET",
           path: "https://httpbin.org/status/200",
-          status: "online",
-        },
-      ],
-    },
+          status: "online"
+        }
+      ]
+    }
   ];
 
   // ================================
@@ -108,14 +111,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ FIX: kalau modal/backdrop nyangkut, unlock lagi scroll body
+  // ✅ FIX KERAS: pastikan scroll nggak ngestuck
   function forceUnlockScroll() {
     DOM.body.classList.remove("modal-open");
     DOM.body.style.overflow = "";
     DOM.body.style.paddingRight = "";
-    const backdrops = document.querySelectorAll(".modal-backdrop");
-    backdrops.forEach((b) => b.parentNode && b.parentNode.removeChild(b));
+
+    document
+      .querySelectorAll(".modal-backdrop")
+      .forEach((b) => b.parentNode && b.parentNode.removeChild(b));
   }
+
+  // hard close modal (baik lewat bootstrap maupun manual)
+  function hardCloseModal() {
+    if (modalInstance) {
+      try {
+        modalInstance.hide();
+      } catch (e) {
+        // ignore
+      }
+    }
+    if (DOM.modalEl) {
+      DOM.modalEl.classList.remove("show");
+      DOM.modalEl.style.display = "none";
+      DOM.modalEl.setAttribute("aria-hidden", "true");
+    }
+    forceUnlockScroll();
+  }
+
+  // panggil di awal untuk jaga-jaga
+  forceUnlockScroll();
 
   // ================================
   // DETEKSI MEDIA (foto / video / audio)
@@ -224,14 +249,14 @@ document.addEventListener("DOMContentLoaded", () => {
     noir: "noir",
     ivory: "royal-amber",
     cyber: "cyber-glow",
-    olive: "emerald-gold",
+    olive: "emerald-gold"
   };
 
   const reversePresetMap = {
     "emerald-gold": "emerald",
     noir: "noir",
     "royal-amber": "ivory",
-    "cyber-glow": "cyber",
+    "cyber-glow": "cyber"
   };
 
   function applyPreset(internalKey) {
@@ -264,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ================================
-  // SIDEBAR (BUG scroll + Beranda)
+  // SIDEBAR
   // ================================
   function openSidebarMobile() {
     if (!DOM.sideNav) return;
@@ -319,8 +344,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (window.innerWidth < 992) {
           closeSidebarMobile();
         } else if (href === "#hero" || href === "#home") {
+          // klik Beranda di desktop → sidebar dibuka, modal ditutup, scroll di-unlock
           if (DOM.sideNav) DOM.sideNav.classList.remove("collapsed");
-          forceUnlockScroll();
+          hardCloseModal();
         }
       });
     });
@@ -435,7 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
     historyItems.unshift({
       name: item.name,
       path: item.path,
-      ts: new Date().toISOString(),
+      ts: new Date().toISOString()
     });
     historyItems = historyItems.slice(0, 20);
     saveJSON("ada-api-history", historyItems);
@@ -738,6 +764,9 @@ document.addEventListener("DOMContentLoaded", () => {
     currentApiItem = item;
     if (!DOM.modalEl) return;
 
+    // sebelum buka modal, pastikan state modal bersih
+    forceUnlockScroll();
+
     const url = item.path || "";
 
     if (DOM.modalTitle) DOM.modalTitle.textContent = item.name || "Endpoint";
@@ -751,7 +780,16 @@ document.addEventListener("DOMContentLoaded", () => {
     addHistory({ name: item.name || "Endpoint", path: url });
     appendLog(`Open modal for ${item.name} -> ${url}`);
 
-    if (modalInstance) modalInstance.show();
+    // buka modal (bootstrap kalau ada, kalau nggak manual)
+    if (modalInstance) {
+      modalInstance.show();
+    } else {
+      DOM.modalEl.style.display = "block";
+      DOM.modalEl.classList.add("show");
+      DOM.modalEl.removeAttribute("aria-hidden");
+      DOM.body.classList.add("modal-open");
+      DOM.body.style.overflow = "hidden";
+    }
 
     // cek apakah endpoint adalah media
     const mediaType = getMediaTypeFromUrl(url);
@@ -809,12 +847,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function initModalEvents() {
-    // ✅ kalau modal ditutup (X / backdrop) pastikan scroll nggak ke-lock
-    if (DOM.modalEl) {
+    // kalau Bootstrap benar-benar dipakai, dengarkan hidden.bs.modal
+    if (DOM.modalEl && window.bootstrap && bootstrap.Modal) {
       DOM.modalEl.addEventListener("hidden.bs.modal", () => {
         forceUnlockScroll();
       });
     }
+
+    // JAGA-JAGA: kalau ada tombol dengan data-bs-dismiss="modal" / .btn-close
+    document.addEventListener("click", (e) => {
+      const closeBtn = e.target.closest(
+        "[data-bs-dismiss='modal'], .btn-close, .modal-close"
+      );
+      if (!closeBtn) return;
+
+      // kasih delay dikit buat Bootstrap beresin, baru kita paksa unlock
+      setTimeout(() => {
+        hardCloseModal();
+      }, 150);
+    });
 
     if (DOM.copyEndpointBtn && DOM.endpointText) {
       DOM.copyEndpointBtn.addEventListener("click", async () => {
