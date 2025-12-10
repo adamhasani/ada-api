@@ -1,74 +1,52 @@
 const express = require('express');
-const chalk = require('chalk');
-const fs = require('fs');
 const cors = require('cors');
 const path = require('path');
+const bodyParser = require('body-parser');
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
-app.enable("trust proxy");
+// Middleware Wajib
+app.enable('trust proxy');
 app.set("json spaces", 2);
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 app.use(cors());
-app.use('/', express.static(path.join(__dirname, 'api-page')));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// --- PENTING: IZINKAN AKSES FILE STATIS ---
+// Baris ini yang bikin settings.json dan script.js bisa dibaca oleh browser
+app.use(express.static('.')); 
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
-const settingsPath = path.join(__dirname, './src/settings.json');
-const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+// --- LOAD ROUTES API ---
+// Pastikan file-file ini ADA di foldernya. Kalau tidak ada, hapus barisnya biar gak error.
+try {
+    // 1. Downloaders
+    require('./src/api/download/ytmp3')(app);
+    
+    // 2. Tools & Upload
+    require('./src/api/tools/tourl')(app);
+    
+    // 3. Random Images (Pastikan nama filenya ba.js atau bluearchive.js)
+    // Cek folder src/api/random/ kamu, namanya apa? Sesuaikan di sini.
+    // require('./src/api/random/ba')(app); 
+    // ATAU
+    require('./src/api/random/bluearchive')(app); 
 
-app.use((req, res, next) => {
-    const originalJson = res.json;
-    res.json = function (data) {
-        if (data && typeof data === 'object') {
-            const responseData = {
-                status: data.status,
-                creator: settings.apiSettings.creator || "Created Using Rynn UI",
-                ...data
-            };
-            return originalJson.call(this, responseData);
-        }
-        return originalJson.call(this, data);
-    };
-    next();
-});
+    // 4. AI (Kalau ada)
+    // require('./src/api/ai/luminai')(app);
+    
+    console.log("✅ Semua Route Berhasil Dimuat");
+} catch (error) {
+    console.log("⚠️ Ada Route yang Error/Hilang (Cek nama file):", error.message);
+}
 
-// Api Route
-let totalRoutes = 0;
-const apiFolder = path.join(__dirname, './src/api');
-fs.readdirSync(apiFolder).forEach((subfolder) => {
-    const subfolderPath = path.join(apiFolder, subfolder);
-    if (fs.statSync(subfolderPath).isDirectory()) {
-        fs.readdirSync(subfolderPath).forEach((file) => {
-            const filePath = path.join(subfolderPath, file);
-            if (path.extname(file) === '.js') {
-                require(filePath)(app);
-                totalRoutes++;
-                console.log(chalk.bgHex('#FFFF99').hex('#333').bold(` Loaded Route: ${path.basename(file)} `));
-            }
-        });
-    }
-});
-console.log(chalk.bgHex('#90EE90').hex('#333').bold(' Load Complete! ✓ '));
-console.log(chalk.bgHex('#90EE90').hex('#333').bold(` Total Routes Loaded: ${totalRoutes} `));
-
+// --- HALAMAN UTAMA ---
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'api-page', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.use((req, res, next) => {
-    res.status(404).sendFile(process.cwd() + "/api-page/404.html");
-});
-
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).sendFile(process.cwd() + "/api-page/500.html");
-});
-
+// Jalankan Server
 app.listen(PORT, () => {
-    console.log(chalk.bgHex('#90EE90').hex('#333').bold(` Server is running on port ${PORT} `));
+    console.log(`Server running at http://localhost:${PORT}`);
 });
-
-module.exports = app;
