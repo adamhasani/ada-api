@@ -16,7 +16,6 @@
 }
 
 /* ========= TEMA DI MODE TERANG ========= */
-/* background halaman tetap cream, tapi panel/kartu ikut tema */
 
 body:not(.dark-mode)[data-theme="emerald-gold"] {
   --bg-panel: rgba(244, 252, 247, 0.98);
@@ -51,7 +50,6 @@ body:not(.dark-mode)[data-theme="cyber-glow"] {
 }
 
 /* ========= TEMA DI MODE GELAP ========= */
-/* full dark, benar-benar mengikuti tema */
 
 body.dark-mode[data-theme="emerald-gold"] {
   --bg-panel: rgba(21, 29, 23, 0.95);
@@ -94,7 +92,7 @@ body.dark-mode[data-theme="cyber-glow"] {
 }
 
 /* ======================================
-   RESET
+   RESET / BODY
    ====================================== */
 *,
 *::before,
@@ -108,7 +106,6 @@ body {
   padding: 0;
 }
 
-/* BASE BODY (background cream) */
 body {
   min-height: 100vh;
   font-family: "Outfit", system-ui, -apple-system, BlinkMacSystemFont,
@@ -118,9 +115,18 @@ body {
   display: flex;
 }
 
-/* DARK MODE – background gelap */
 body.dark-mode {
   background: radial-gradient(circle at top left, #030605, #070b0a);
+}
+
+/* panel yang pakai bg-panel */
+.api-card,
+.request-api-box,
+.logs-console,
+.request-section .request-api-box,
+.request-history,
+.logs-section {
+  background: var(--bg-panel);
 }
 
 /* ======================================
@@ -302,7 +308,6 @@ main {
   flex: 1;
 }
 
-/* wrapper untuk konten kanan */
 body > main,
 body > .main-wrapper {
   flex: 1;
@@ -318,7 +323,6 @@ body > .main-wrapper {
   z-index: 2;
 }
 
-.side-nav.collapsed + .sidebar-backdrop + .main-wrapper,
 .side-nav.collapsed ~ .main-wrapper {
   margin-left: 70px;
   width: calc(100% - 70px);
@@ -469,7 +473,6 @@ body.dark-mode .preset-group {
   text-transform: uppercase;
 }
 
-/* header toggle */
 .toggle-track {
   position: relative;
   width: 40px;
@@ -532,13 +535,12 @@ body.dark-mode .preset-select {
 }
 
 /* ======================================
-   MAIN CONTENT BODY
+   MAIN CONTENT
    ====================================== */
 .main-wrapper main {
   padding: 1.4rem 2rem 2.4rem;
 }
 
-/* HERO */
 .hero-section {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr);
@@ -734,7 +736,7 @@ body.dark-mode .preset-select {
   text-transform: uppercase;
   margin: 0;
   font-weight: 600;
-  color: #18130d; /* lebih gelap biar kebaca di mode terang */
+  color: #18130d;
 }
 
 .section-title-oldmoney {
@@ -828,11 +830,9 @@ body.dark-mode .section-description {
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
 }
 
+/* judul di atas, GET/Online di bawah judul */
 .api-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.75rem;
+  display: block;
 }
 
 .api-card-title {
@@ -841,17 +841,17 @@ body.dark-mode .section-description {
   color: var(--text-main);
 }
 
-.api-card-desc {
-  font-size: 0.8rem;
-  color: var(--text-soft);
-  margin-top: 0.25rem;
-}
-
 .card-meta-row {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.api-card-desc {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  margin-top: 0.25rem;
 }
 
 /* HTTP BADGE */
@@ -1134,7 +1134,7 @@ body.dark-mode #apiRequestInput {
   font-size: 0.75rem;
 }
 
-/* close button lingkaran */
+/* close button bulat */
 .btn-close {
   position: relative;
   border-radius: 999px;
@@ -1179,7 +1179,7 @@ body.dark-mode .btn-close i {
   border-radius: 12px;
   padding: 0.9rem 1rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+    "Courier New", monospace;
   font-size: 0.78rem;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.6);
 }
@@ -1234,23 +1234,6 @@ body.dark-mode .btn-close i {
   to {
     transform: rotate(360deg);
   }
-}
-
-/* JSON highlight (kalau mau dipakai manual) */
-.json-key {
-  color: #ffd57a;
-}
-.json-string {
-  color: #7ce8a6;
-}
-.json-number {
-  color: #9ad0ff;
-}
-.json-boolean {
-  color: #ff9f9f;
-}
-.json-null {
-  color: #f6b3ff;
 }
 
 /* ======================================

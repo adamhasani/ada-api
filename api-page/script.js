@@ -51,8 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentApiItem = null;
   let favorites = loadJSON("ada-api-fav", []); // array path
   let historyItems = loadJSON("ada-api-history", []); // {name,path,ts}
-  let themeMode = null;
-  let themePresetInternal = null;
+  let themeMode = null; // "light" / "dark"
+  let themePresetInternal = null; // "emerald-gold" / "noir" / ...
 
   // fallback kalau settings.json gagal
   const fallbackCategories = [
@@ -124,12 +124,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // sinkron data-theme dengan mode + preset
+  function syncBodyThemeAttr() {
+    if (themeMode === "dark") {
+      const internal = themePresetInternal || "emerald-gold";
+      DOM.body.setAttribute("data-theme", internal);
+    } else {
+      // mode terang: pakai palet default (tanpa data-theme)
+      DOM.body.removeAttribute("data-theme");
+    }
+  }
+
   function applyMode(mode) {
     const isDark = mode === "dark";
+    themeMode = mode;
+
     DOM.body.classList.toggle("dark-mode", isDark);
     if (DOM.themeToggle) DOM.themeToggle.checked = isDark;
-    themeMode = mode;
+
     saveJSON("ada-ui-mode", mode);
+    syncBodyThemeAttr();
   }
 
   function initMode() {
@@ -154,7 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ================================
-  // THEME PRESET (data-theme)
+  // THEME PRESET (data-theme – hanya utk mode gelap)
   // ================================
   const presetMap = {
     emerald: "emerald-gold",
@@ -174,7 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function applyPreset(internalKey) {
     const allowed = ["emerald-gold", "noir", "royal-amber", "cyber-glow"];
     if (!allowed.includes(internalKey)) internalKey = "emerald-gold";
-    DOM.body.setAttribute("data-theme", internalKey);
+
     themePresetInternal = internalKey;
     saveJSON("ada-ui-theme", internalKey);
 
@@ -182,6 +196,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const selectValue = reversePresetMap[internalKey] || "emerald";
       DOM.themePreset.value = selectValue;
     }
+
+    // kalau lagi mode gelap, ganti data-theme, kalau terang biarin kosong
+    syncBodyThemeAttr();
   }
 
   function initPreset() {
@@ -301,7 +318,8 @@ document.addEventListener("DOMContentLoaded", () => {
         desc.includes(query) ||
         path.includes(query);
 
-      el.style.display = match ? "" : "none";
+      el.dataset.searchMatch = match ? "1" : "0";
+      applyCombinedVisibility(el);
     });
   }
 
@@ -328,14 +346,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function toggleFav(path, btn) {
     const idx = favorites.indexOf(path);
+    const itemEl = btn.closest(".api-item");
+
     if (idx >= 0) {
       favorites.splice(idx, 1);
       btn.classList.remove("favorited");
+      if (itemEl) itemEl.dataset.fav = "0";
     } else {
       favorites.push(path);
       btn.classList.add("favorited");
+      if (itemEl) itemEl.dataset.fav = "1";
     }
     saveJSON("ada-api-fav", favorites);
+
+    // update display kalau lagi filter Favorites
+    if (DOM.apiFilters) {
+      const active = DOM.apiFilters.querySelector(".filter-chip.active");
+      if (active && active.dataset.filter === "favorites") {
+        applyFilters("favorites");
+      }
+    }
   }
 
   function addHistory(item) {
@@ -371,6 +401,47 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ================================
+  // VISIBILITY HELPER (filter + search + favorites)
+  // ================================
+  function applyCombinedVisibility(itemEl) {
+    const catMatch = itemEl.dataset.catMatch !== "0";
+    const favMatch = itemEl.dataset.favMatch !== "0";
+    const searchMatch = itemEl.dataset.searchMatch !== "0";
+
+    const visible = catMatch && favMatch && searchMatch;
+    itemEl.style.display = visible ? "" : "none";
+  }
+
+  function applyFilters(activeFilter) {
+    const items = DOM.apiContent
+      ? DOM.apiContent.querySelectorAll(".api-item")
+      : [];
+
+    items.forEach((itemEl) => {
+      const catName = itemEl.dataset.category;
+      const isFavItem = itemEl.dataset.fav === "1";
+
+      // kategori
+      if (activeFilter === "all" || activeFilter === "favorites") {
+        itemEl.dataset.catMatch = "1";
+      } else {
+        itemEl.dataset.catMatch = catName === activeFilter ? "1" : "0";
+      }
+
+      // favorites
+      if (activeFilter === "favorites") {
+        itemEl.dataset.favMatch = isFavItem ? "1" : "0";
+      } else {
+        itemEl.dataset.favMatch = "1";
+      }
+
+      if (!itemEl.dataset.searchMatch) itemEl.dataset.searchMatch = "1";
+
+      applyCombinedVisibility(itemEl);
+    });
+  }
+
+  // ================================
   // RENDER API CARD & FILTER
   // ================================
   function buildApiCard(categoryName, item) {
@@ -378,26 +449,24 @@ document.addEventListener("DOMContentLoaded", () => {
     col.className = "col-12 col-md-6 col-lg-4 api-item";
     col.dataset.category = categoryName;
 
+    const isFavoriteItem = isFav(item.path);
+    col.dataset.fav = isFavoriteItem ? "1" : "0";
+    col.dataset.catMatch = "1";
+    col.dataset.favMatch = "1";
+    col.dataset.searchMatch = "1";
+
     const card = document.createElement("article");
     card.className = "api-card";
 
     const header = document.createElement("div");
     header.className = "api-card-header";
 
-    const titleWrap = document.createElement("div");
     const title = document.createElement("h4");
     title.className = "api-card-title";
     title.textContent = item.name;
 
-    const desc = document.createElement("p");
-    desc.className = "api-card-desc";
-    desc.textContent = item.desc || "";
-
-    titleWrap.appendChild(title);
-    titleWrap.appendChild(desc);
-
-    const metaRight = document.createElement("div");
-    metaRight.className = "card-meta-row";
+    const metaRow = document.createElement("div");
+    metaRow.className = "card-meta-row";
 
     const methodBadge = document.createElement("span");
     methodBadge.className = "http-badge";
@@ -410,23 +479,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const statusBadge = document.createElement("span");
     statusBadge.className = "endpoint-status-pill";
-    const status = (item.status || "unknown").toLowerCase();
-    if (status === "ready" || status === "online") {
-      statusBadge.classList.add("status-ok");
-      statusBadge.textContent = "Online";
-    } else if (status === "error" || status === "down") {
-      statusBadge.classList.add("status-error");
-      statusBadge.textContent = "Error";
-    } else {
-      statusBadge.classList.add("status-unknown");
-      statusBadge.textContent = "Unknown";
-    }
+    statusBadge.dataset.path = item.path || "";
 
-    metaRight.appendChild(methodBadge);
-    metaRight.appendChild(statusBadge);
+    const initialStatus = (item.status || "unknown").toLowerCase();
+    setStatusPill(statusBadge, initialStatus);
 
-    header.appendChild(titleWrap);
-    header.appendChild(metaRight);
+    metaRow.appendChild(methodBadge);
+    metaRow.appendChild(statusBadge);
+
+    header.appendChild(title);
+    header.appendChild(metaRow);
+
+    const desc = document.createElement("p");
+    desc.className = "api-card-desc";
+    desc.textContent = item.desc || "";
 
     const footer = document.createElement("div");
     footer.className = "api-card-footer";
@@ -449,7 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
     favBtn.dataset.path = item.path;
     favBtn.innerHTML = '<i class="fas fa-star"></i>';
 
-    if (isFav(item.path)) {
+    if (isFavoriteItem) {
       favBtn.classList.add("favorited");
     }
 
@@ -460,6 +526,7 @@ document.addEventListener("DOMContentLoaded", () => {
     footer.appendChild(actions);
 
     card.appendChild(header);
+    card.appendChild(desc);
     card.appendChild(footer);
     col.appendChild(card);
 
@@ -473,42 +540,42 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!DOM.apiFilters) return;
     DOM.apiFilters.innerHTML = "";
 
-    const allBtn = document.createElement("button");
-    allBtn.type = "button";
-    allBtn.className = "filter-chip active";
-    allBtn.textContent = "Semua";
-    allBtn.dataset.filter = "all";
-    DOM.apiFilters.appendChild(allBtn);
-
-    categories.forEach((cat) => {
+    const makeChip = (label, value, isActive = false) => {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "filter-chip";
-      btn.textContent = cat.name;
-      btn.dataset.filter = cat.name;
+      if (isActive) btn.classList.add("active");
+      btn.textContent = label;
+      btn.dataset.filter = value;
       DOM.apiFilters.appendChild(btn);
+      return btn;
+    };
+
+    makeChip("Semua", "all", true);
+
+    categories.forEach((cat) => {
+      makeChip(cat.name, cat.name);
     });
+
+    makeChip("Search Tools", "search-tools");
+    makeChip("Favorites", "favorites");
 
     DOM.apiFilters.onclick = (e) => {
       const btn = e.target.closest(".filter-chip");
       if (!btn) return;
       const filter = btn.dataset.filter;
+
       DOM.apiFilters
         .querySelectorAll(".filter-chip")
         .forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
 
-      const items = DOM.apiContent
-        ? DOM.apiContent.querySelectorAll(".api-item")
-        : [];
-      items.forEach((itemEl) => {
-        const catName = itemEl.dataset.category;
-        if (filter === "all" || filter === catName) {
-          itemEl.style.display = "";
-        } else {
-          itemEl.style.display = "none";
-        }
-      });
+      if (filter === "search-tools") {
+        // sementara sama dengan "all"
+        applyFilters("all");
+      } else {
+        applyFilters(filter);
+      }
     };
   }
 
@@ -536,6 +603,71 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
     DOM.apiContent.appendChild(row);
+
+    applyFilters("all");
+    checkEndpointStatusForAll();
+  }
+
+  // ================================
+  // STATUS PILL (ONLINE / ERROR)
+  // ================================
+  function setStatusPill(el, status) {
+    el.classList.remove("status-ok", "status-error", "status-unknown");
+
+    const s = (status || "").toLowerCase();
+
+    if (s === "ok" || s === "online" || s === "ready") {
+      el.classList.add("status-ok");
+      el.textContent = "Online";
+    } else if (s === "error" || s === "down" || s === "failed") {
+      el.classList.add("status-error");
+      el.textContent = "Error";
+    } else if (s === "checking") {
+      el.classList.add("status-unknown");
+      el.textContent = "Checking…";
+    } else {
+      el.classList.add("status-unknown");
+      el.textContent = "Unknown";
+    }
+  }
+
+  function checkEndpointStatusForAll() {
+    const items = DOM.apiContent
+      ? DOM.apiContent.querySelectorAll(".api-item")
+      : [];
+    if (!items.length) return;
+
+    items.forEach((itemEl) => {
+      const pathEl = itemEl.querySelector(".api-path");
+      const statusEl = itemEl.querySelector(".endpoint-status-pill");
+      const methodBadge = itemEl.querySelector(".http-badge");
+      if (!pathEl || !statusEl) return;
+
+      const url = (pathEl.textContent || "").trim();
+      if (!url) return;
+
+      const method = (methodBadge?.textContent || "GET")
+        .toString()
+        .trim()
+        .toUpperCase();
+
+      // untuk cek status cukup GET saja supaya aman
+      const fetchMethod = method === "GET" ? "GET" : "GET";
+
+      setStatusPill(statusEl, "checking");
+
+      fetch(url, { method: fetchMethod })
+        .then((res) => {
+          if (res.ok) {
+            setStatusPill(statusEl, "online");
+          } else {
+            setStatusPill(statusEl, "error");
+          }
+        })
+        .catch(() => {
+          setStatusPill(statusEl, "error");
+        });
+    });
   }
 
   // ================================
@@ -545,7 +677,6 @@ document.addEventListener("DOMContentLoaded", () => {
     currentApiItem = item;
     if (!DOM.modalEl) return;
 
-    const method = (item.method || "GET").toUpperCase();
     const url = item.path || "";
 
     if (DOM.modalTitle) DOM.modalTitle.textContent = item.name || "Endpoint";
@@ -561,7 +692,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (modalInstance) modalInstance.show();
 
-    // langsung auto-request
+    // auto request
     sendApiRequest();
   }
 
@@ -727,7 +858,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // INIT
   // ================================
   async function init() {
-    // hapus placeholder log di HTML kalau ada
     if (DOM.logsConsole) DOM.logsConsole.textContent = "";
 
     initMode();
