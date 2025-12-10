@@ -587,17 +587,39 @@ document.addEventListener("DOMContentLoaded", () => {
     getBtn.innerHTML = '<i class="fas fa-bolt me-1"></i>Get API';
 
     // ==== DOWNLOAD (link manual dari settings.json) ====
-    const downloadBtn = document.createElement("a");
+    const downloadBtn = document.createElement("button");
+    downloadBtn.type = "button";
     downloadBtn.className = "api-download-btn";
     downloadBtn.innerHTML = '<i class="fas fa-download me-1"></i>Download';
 
-    const downloadUrl = item.download || item.downloadUrl || "";
-    if (downloadUrl) {
-      downloadBtn.href = downloadUrl;
-      downloadBtn.target = "_blank";
-      downloadBtn.rel = "noopener";
-    } else {
+    const downloadBase = item.download || item.downloadUrl || "";
+    if (!downloadBase) {
       downloadBtn.style.display = "none";
+    } else {
+      downloadBtn.addEventListener("click", () => {
+        // kalau di settings.json kamu isi:
+        // "download": "/yt/mp3?url="
+        // maka di sini kita minta user isi URL YouTube dulu.
+        let finalUrl = downloadBase;
+        let needsQuery =
+          finalUrl.endsWith("=") || finalUrl.includes("{query}");
+
+        if (needsQuery) {
+          const userInput = prompt("Masukkan link / URL untuk di-download:");
+          if (!userInput) return;
+          const trimmed = userInput.trim();
+          if (!trimmed) return;
+
+          if (finalUrl.includes("{query}")) {
+            finalUrl = finalUrl.replace("{query}", encodeURIComponent(trimmed));
+          } else {
+            finalUrl = finalUrl + encodeURIComponent(trimmed);
+          }
+        }
+
+        appendLog(`Download: ${finalUrl}`);
+        window.open(finalUrl, "_blank");
+      });
     }
 
     // ==== FAVORITE ====
