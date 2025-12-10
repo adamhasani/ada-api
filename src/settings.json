@@ -1,39 +1,29 @@
 {
   "name": "Ada API UI",
-  "version": "v1.0.0",
-  "description": "Simple and easy to use API console for Ada API.",
+  "version": "v3.0 Hybrid",
+  "description": "API Console",
   "bannerImage": "/src/banner.gif",
-  "header": {
-    "status": "Online!"
-  },
-  "apiSettings": {
-    "creator": "Ada",
-    "apikey": ["ada-api"]
-  },
+  "header": { "status": "Online!" },
+  "apiSettings": { "creator": "Ada", "apikey": ["ada-api"] },
   "categories": [
     {
-      "name": "AI (Artificial Intelligence)",
+      "name": "AI Features",
       "items": [
         {
           "name": "LuminAI",
-          "desc": "Talk with LuminAI.",
+          "desc": "Chat AI pintar.",
           "path": "/luminai?text=halo",
           "status": "ready",
           "method": "GET",
-          "params": {
-            "text": "Text chat"
-          }
+          "params": { "text": "Pertanyaan kamu" }
         },
         {
           "name": "HydroMind",
-          "desc": "Chat AI via HydroMind (Multi Model).",
+          "desc": "Multi-Model AI Chat.",
           "path": "/hydromind?text=halo&model=gpt-4o",
           "status": "ready",
           "method": "GET",
-          "params": {
-            "text": "Teks chat",
-            "model": "Model ID (gpt-4o, dll)"
-          }
+          "params": { "text": "Chat", "model": "Model ID" }
         }
       ]
     },
@@ -42,22 +32,20 @@
       "items": [
         {
           "name": "YouTube MP3",
-          "desc": "Download Audio YouTube via Link.",
-          "path": "/ytmp3?url=LINK_YT_DISINI",
+          "desc": "Download Lagu YT (Hybrid View).",
+          "path": "/ytmp3?url=LINK_YT",
           "status": "ready",
           "method": "GET",
-          "params": {
-            "url": "Link YouTube"
-          }
+          "params": { "url": "Link YouTube" }
         }
       ]
     },
     {
-      "name": "Random",
+      "name": "Random Media",
       "items": [
         {
           "name": "Blue Archive",
-          "desc": "Random Image Blue Archive (Direct Link)",
+          "desc": "Random Image (Direct Redirect).",
           "path": "/random/ba",
           "status": "ready",
           "method": "GET"
@@ -65,32 +53,15 @@
       ]
     },
     {
-      "name": "Search Tools",
-      "items": [
-        {
-          "name": "YouTube Search",
-          "desc": "Cari video YouTube.",
-          "path": "/ytsearch?q=lofi",
-          "status": "ready",
-          "method": "GET",
-          "params": {
-            "q": "Kata kunci pencarian"
-          }
-        }
-      ]
-    },
-    {
       "name": "Tools",
       "items": [
         {
-          "name": "Tourl (Upload)",
-          "desc": "Upload File/Gambar menjadi Link URL.",
+          "name": "Upload File (Tourl)",
+          "desc": "Upload Gambar/Dokumen jadi Link.",
           "path": "/tourl",
           "status": "ready",
           "method": "POST",
-          "params": {
-            "file": "Media (Image/Video/Doc)"
-          }
+          "params": { "file": "Pilih File" }
         }
       ]
     }
