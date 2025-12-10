@@ -16,23 +16,23 @@
       "items": [
         {
           "name": "LuminAI",
-          "desc": "Talk with LuminAI. Contoh: text=halo dari web",
-          "path": "/ai/luminai?text=halo%20dari%20web",
+          "desc": "Talk with LuminAI.",
+          "path": "/luminai?text=halo",
           "status": "ready",
           "method": "GET",
           "params": {
-            "text": "Text for luminai to respond to"
+            "text": "Text chat"
           }
         },
         {
           "name": "HydroMind",
-          "desc": "Chat AI via HydroMind. Contoh: text=halo; model=isi sesuai daftar di mind.hydrooo.web.id",
-          "path": "/ai/hydromind?text=halo%20dari%20web&model=gpt-4o",
+          "desc": "Chat AI via HydroMind (Multi Model).",
+          "path": "/hydromind?text=halo&model=gpt-4o",
           "status": "ready",
           "method": "GET",
           "params": {
-            "text": "Teks atau perintah untuk chat AI",
-            "model": "See the list of supported AI models here: https://mind.hydrooo.web.id"
+            "text": "Teks chat",
+            "model": "Model ID (gpt-4o, dll)"
           }
         }
       ]
@@ -43,11 +43,11 @@
         {
           "name": "YouTube MP3",
           "desc": "Download Audio YouTube via Link.",
-          "path": "/api/download/ytmp3?url=https://youtu.be/na8A4-fapww?si=sFu7VY0yzsUyLeTg",
+          "path": "/ytmp3?url=LINK_YT_DISINI",
           "status": "ready",
           "method": "GET",
           "params": {
-            "url": "Link YouTube (Contoh: https://youtu.be/...)"
+            "url": "Link YouTube"
           }
         }
       ]
@@ -57,7 +57,7 @@
       "items": [
         {
           "name": "Blue Archive",
-          "desc": "Blue Archive random images.",
+          "desc": "Random Image Blue Archive (Direct Link)",
           "path": "/random/ba",
           "status": "ready",
           "method": "GET"
@@ -68,13 +68,13 @@
       "name": "Search Tools",
       "items": [
         {
-          "name": "YouTube",
-          "desc": "Video search. Contoh: q=lofi hip hop",
-          "path": "/search/youtube?q=lofi%20hip%20hop",
+          "name": "YouTube Search",
+          "desc": "Cari video YouTube.",
+          "path": "/ytsearch?q=lofi",
           "status": "ready",
           "method": "GET",
           "params": {
-            "q": "Search query"
+            "q": "Kata kunci pencarian"
           }
         }
       ]
@@ -84,8 +84,8 @@
       "items": [
         {
           "name": "Tourl (Upload)",
-          "desc": "Upload File/Gambar menjadi Link URL (Auto Fallback Catbox/Yupra).",
-          "path": "/api/tools/tourl",
+          "desc": "Upload File/Gambar menjadi Link URL.",
+          "path": "/tourl",
           "status": "ready",
           "method": "POST",
           "params": {
