@@ -1,67 +1,126 @@
 {
-  "name": "Ada API UI",
-  "version": "v3.0 Hybrid",
-  "description": "API Console",
-  "bannerImage": "/src/banner.gif",
-  "header": { "status": "Online!" },
-  "apiSettings": { "creator": "Ada", "apikey": ["ada-api"] },
+  "name": "Ada API",
+  "version": "v1.2",
+  "description": "Simple and easy API for developers.",
+  "bannerImage": "/src/banner.jpg",
+
   "categories": [
     {
-      "name": "AI Features",
+      "name": "AI Tools",
       "items": [
         {
-          "name": "LuminAI",
-          "desc": "Chat AI pintar.",
-          "path": "/luminai?text=halo",
-          "status": "ready",
+          "name": "HydroMind",
+          "desc": "Chat AI via HydroMind.",
           "method": "GET",
-          "params": { "text": "Pertanyaan kamu" }
+          "path": "/ai/hydromind?text=halo%20dari%20web&model=gpt-4o-mini",
+          "status": "ready",
+          "download": "/downloads/hydromind-client.apk",
+          "params": {
+            "text": "text=",
+            "model": "model="
+          }
         },
         {
-          "name": "HydroMind",
-          "desc": "Multi-Model AI Chat.",
-          "path": "/hydromind?text=halo&model=gpt-4o",
-          "status": "ready",
+          "name": "LuminAI",
+          "desc": "LuminAI text chat.",
           "method": "GET",
-          "params": { "text": "Chat", "model": "Model ID" }
+          "path": "/ai/luminai?text=halo",
+          "status": "ready",
+          "download": "/downloads/luminai.apk",
+          "params": {
+            "text": "text="
+          }
         }
       ]
     },
+
     {
-      "name": "Downloader",
+      "name": "Media Tools",
       "items": [
         {
           "name": "YouTube MP3",
-          "desc": "Download Lagu YT (Hybrid View).",
-          "path": "/ytmp3?url=LINK_YT",
-          "status": "ready",
+          "desc": "Convert YouTube video to MP3.",
           "method": "GET",
-          "params": { "url": "Link YouTube" }
+          "path": "/yt/mp3?url=",
+          "status": "ready",
+          "download": "/yt/mp3?url=",
+          "params": {
+            "url": "url="
+          }
+        },
+        {
+          "name": "YouTube MP4",
+          "desc": "Download YouTube video as MP4.",
+          "method": "GET",
+          "path": "/yt/mp4?url=",
+          "status": "ready",
+          "download": "/yt/mp4?url=",
+          "params": {
+            "url": "url="
+          }
+        },
+        {
+          "name": "Audio to Text",
+          "desc": "Convert audio file into text using speech recognition.",
+          "method": "GET",
+          "path": "/media/audio2text?url=",
+          "status": "ready",
+          "download": "",
+          "params": {
+            "url": "url="
+          }
         }
       ]
     },
+
     {
-      "name": "Random Media",
+      "name": "Image Generators",
       "items": [
         {
-          "name": "Blue Archive",
-          "desc": "Random Image (Direct Redirect).",
+          "name": "Blue Archive Random",
+          "desc": "Blue Archive random character image.",
+          "method": "GET",
           "path": "/random/ba",
           "status": "ready",
-          "method": "GET"
+          "download": "/random/ba",
+          "params": {}
+        },
+        {
+          "name": "Waifu Random",
+          "desc": "Random waifu anime image.",
+          "method": "GET",
+          "path": "/random/waifu",
+          "status": "ready",
+          "download": "/random/waifu",
+          "params": {}
         }
       ]
     },
+
     {
-      "name": "Tools",
+      "name": "Search Tools",
       "items": [
         {
-          "name": "Upload File (Tourl)",
-          "desc": "Upload Gambar/Dokumen jadi Link.",
-          "path": "/tourl",
+          "name": "YouTube Search",
+          "desc": "Search YouTube videos.",
+          "method": "GET",
+          "path": "/search/yt?q=",
           "status": "ready",
-          "method": "POST",
-          "params": { "file": "Pilih File" }
+          "download": "",
+          "params": {
+            "query": "q="
+          }
+        },
+        {
+          "name": "Pinterest Search",
+          "desc": "Search Pinterest images.",
+          "method": "GET",
+          "path": "/search/pinterest?q=",
+          "status": "ready",
+          "download": "",
+          "params": {
+            "query": "q="
+          }
         }
       ]
     }
