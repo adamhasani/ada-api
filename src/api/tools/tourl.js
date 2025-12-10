@@ -8,43 +8,45 @@ const upload = multer({
     limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-const USER_AGENT = 'Mozilla/5.0 (curl/7.68.0)'; // Nyamar jadi cURL biar diterima server dev
+// "Topeng" cURL supaya server mengira kita adalah Terminal Linux
+const CURL_AGENT = 'curl/7.68.0'; 
 
-// --- 1. FILE.IO (Paling Cepat & Stabil - 1x Download / 14 Hari) ---
+// --- 1. FILE.IO (Target Utama - Auto Hapus/Expires) ---
 async function uploadToFileio(buffer, filename) {
     const form = new FormData();
     form.append('file', buffer, filename);
+    
+    // Trik: Set expires biar dianggap request valid (bukan spam bot)
+    form.append('expires', '3d'); // File tahan 3 hari
+    form.append('maxDownloads', '100'); 
+    
     const res = await axios.post('https://file.io', form, {
-        headers: { ...form.getHeaders() }
-    });
-    if (res.data && res.data.success) return res.data.link;
-    throw new Error(`File.io Error: ${JSON.stringify(res.data)}`);
-}
-
-// --- 2. TRANSFER.SH (Developer Friendly - 14 Hari) ---
-async function uploadToTransferSh(buffer, filename) {
-    // Transfer.sh pakai PUT binary langsung
-    const safeFilename = encodeURIComponent(filename.replace(/\s+/g, '-'));
-    const res = await axios.put(`https://transfer.sh/${safeFilename}`, buffer, {
         headers: { 
-            'User-Agent': USER_AGENT,
-            'Content-Type': 'application/octet-stream' // Wajib binary
+            ...form.getHeaders(), 
+            'User-Agent': CURL_AGENT, // Nyamar jadi cURL
+            'Accept': 'application/json' // Minta JSON baik-baik
         }
     });
-    // Transfer.sh balikin body string langsung berupa URL
-    if (res.data && typeof res.data === 'string' && res.data.includes('transfer.sh')) {
-        return res.data.trim();
+
+    if (res.data && res.data.success) {
+        return res.data.link;
     }
-    throw new Error("Transfer.sh Failed");
+    throw new Error(`File.io Blocked/Error`);
 }
 
-// --- 3. 0x0.ST (Null Pointer - Tahan Lama) ---
+// --- 2. 0x0.ST (Cadangan Paling Stabil - The Null Pointer) ---
 async function uploadTo0x0(buffer, filename) {
     const form = new FormData();
     form.append('file', buffer, filename);
+    
     const res = await axios.post('https://0x0.st', form, {
-        headers: { ...form.getHeaders() }
+        headers: { 
+            ...form.getHeaders(), 
+            'User-Agent': CURL_AGENT 
+        }
     });
+    
+    // 0x0.st balikin body string URL mentah (misal: https://0x0.st/abcd.jpg)
     if (res.data && typeof res.data === 'string' && res.data.startsWith('http')) {
         return res.data.trim();
     }
@@ -57,44 +59,47 @@ module.exports = function(app) {
             const file = req.file;
             if (!file) return res.status(400).json({ status: false, creator: "Ada API", error: "File tidak ditemukan." });
 
-            // Cek Limit Vercel
+            // Cek Limit Vercel (PENTING)
             if (file.size > 4.5 * 1024 * 1024) {
                 return res.status(400).json({ status: false, creator: "Ada API", error: "File max 4.5MB (Limit Vercel)." });
             }
 
-            // LIST SERVER (Prioritas Developer Servers)
+            // LIST SERVER (Urutan: File.io -> 0x0.st)
+            // Tidak perlu membedakan Gambar/Dokumen karena kedua server ini support SEMUA file.
             const providers = [
-                { name: 'File.io', fn: uploadToFileio },
-                { name: 'Transfer.sh', fn: uploadToTransferSh },
-                { name: '0x0.st', fn: uploadTo0x0 }
+                { name: 'File.io', fn: () => uploadToFileio(file.buffer, file.originalname) },
+                { name: '0x0.st', fn: () => uploadTo0x0(file.buffer, file.originalname) }
             ];
 
             let resultUrl = null;
             let serverName = "";
             let errors = [];
 
-            // LOOPING
+            // LOOPING PERCOBAAN
             for (const provider of providers) {
                 try {
                     console.log(`Mencoba upload ke ${provider.name}...`);
-                    resultUrl = await provider.fn(file.buffer, file.originalname);
+                    resultUrl = await provider.fn();
                     serverName = provider.name;
-                    break;
+                    break; // Kalau berhasil, STOP looping
                 } catch (e) {
-                    console.log(`${provider.name} Gagal: ${e.message}`);
-                    errors.push(`${provider.name}: ${e.message}`);
+                    const msg = e.response ? `Status ${e.response.status}` : e.message;
+                    console.log(`${provider.name} Gagal: ${msg}`);
+                    errors.push(`${provider.name}: ${msg}`);
                 }
             }
 
+            // Jika semua gagal
             if (!resultUrl) {
                 return res.status(500).json({
                     status: false,
                     creator: "Ada API",
-                    error: "Gagal upload. Server sedang sibuk.",
+                    error: "Gagal upload. Semua server menolak.",
                     debug_trace: errors
                 });
             }
 
+            // Berhasil
             res.status(200).json({
                 status: true,
                 creator: "Ada API",
