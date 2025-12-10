@@ -1,24 +1,23 @@
 const axios = require('axios');
+
 module.exports = function(app) {
-    async function bluearchive() {
-        try {
-            const { data } = await axios.get(`https://raw.githubusercontent.com/rynxzyy/blue-archive-r-img/refs/heads/main/links.json`)
-            const response = await axios.get(data[Math.floor(data.length * Math.random())], { responseType: 'arraybuffer' });
-            return Buffer.from(response.data);
-        } catch (error) {
-            throw error;
-        }
-    }
+    // 👇 INI RAHASIANYA
+    // Tulis '/random/ba' supaya linknya jadi: website-kamu.com/random/ba
+    // Jangan tulis '/api/random/ba' kalau mau pendek.
     app.get('/random/ba', async (req, res) => {
         try {
-            const pedo = await bluearchive();
-            res.writeHead(200, {
-                'Content-Type': 'image/png',
-                'Content-Length': pedo.length,
-            });
-            res.end(pedo);
+            // 1. Ambil database link gambar
+            const { data } = await axios.get('https://raw.githubusercontent.com/rynxzyy/blue-archive-r-img/refs/heads/main/links.json');
+            
+            // 2. Acak gambar
+            const randomUrl = data[Math.floor(Math.random() * data.length)];
+            
+            // 3. Redirect (Langsung pindah ke gambar, bukan download buffer)
+            // Ini yang bikin tampilan bersih seperti Falcon API
+            res.redirect(randomUrl);
+
         } catch (error) {
-            res.status(500).send(`Error: ${error.message}`);
+            res.status(500).json({ error: "Gagal mengambil gambar" });
         }
     });
 };
