@@ -6,28 +6,19 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "index.html",
-          "script.js",
+          "api-page/**", 
           "src/**"
         ]
       }
     }
   ],
   "routes": [
-    {
-      "src": "/src/(.*)",
-      "dest": "/src/$1"
-    },
-    {
-      "src": "/script.js",
-      "dest": "/script.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.js"
-    }
+    { "src": "/src/(.*)", "dest": "/src/$1" },
+    
+    { "src": "/style.css", "dest": "/api-page/style.css" },
+    { "src": "/script.js", "dest": "/api-page/script.js" },
+    
+    { "src": "/(.*)", "dest": "/index.js" }
   ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "env": { "NODE_ENV": "production" }
 }
