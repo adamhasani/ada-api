@@ -3,7 +3,6 @@
   "version": "v1.2",
   "description": "Simple and easy API for developers.",
   "bannerImage": "/src/banner.jpg",
-
   "categories": [
     {
       "name": "AI Tools",
@@ -12,67 +11,54 @@
           "name": "HydroMind",
           "desc": "Chat AI via HydroMind.",
           "method": "GET",
-          "path": "/ai/hydromind?text=halo%20dari%20web&model=gpt-4o-mini",
+          "path": "https://ada-api-vace.vercel.app/ai/hydromind?text=halo%20dari%20web&model=gpt-4o-mini",
           "status": "ready",
-          "download": "/downloads/hydromind-client.apk",
-          "params": {
-            "text": "text=",
-            "model": "model="
-          }
+          "download": "https://ada-api-vace.vercel.app/downloads/hydromind-client.apk",
+          "params": { "text": "text=", "model": "model=" }
         },
         {
           "name": "LuminAI",
           "desc": "LuminAI text chat.",
           "method": "GET",
-          "path": "/ai/luminai?text=halo",
+          "path": "https://YOUR_API_DOMAIN/ai/luminai?text=halo",
           "status": "ready",
-          "download": "/downloads/luminai.apk",
-          "params": {
-            "text": "text="
-          }
+          "download": "https://ada-api-vace.vercel.app/downloads/luminai.apk",
+          "params": { "text": "text=" }
         }
       ]
     },
-
     {
       "name": "Media Tools",
       "items": [
         {
           "name": "YouTube MP3",
-          "desc": "Convert YouTube video to MP3.",
+          "desc": "Convert YouTube video to MP3. (user will be asked for video link)",
           "method": "GET",
-          "path": "/yt/mp3?url=",
+          "path": "https://YOUR_API_DOMAIN/yt/mp3?url=",
           "status": "ready",
-          "download": "/yt/mp3?url=",
-          "params": {
-            "url": "url="
-          }
+          "download": "https://ada-api-vace.vercel.app/yt/mp3?url=",
+          "params": { "url": "url=" }
         },
         {
           "name": "YouTube MP4",
-          "desc": "Download YouTube video as MP4.",
+          "desc": "Download YouTube video as MP4. (user will be asked for video link)",
           "method": "GET",
-          "path": "/yt/mp4?url=",
+          "path": "https://ada-api-vace.vercel.app/yt/mp4?url=",
           "status": "ready",
-          "download": "/yt/mp4?url=",
-          "params": {
-            "url": "url="
-          }
+          "download": "https://ada-api-vace.vercel.app/yt/mp4?url=",
+          "params": { "url": "url=" }
         },
         {
           "name": "Audio to Text",
           "desc": "Convert audio file into text using speech recognition.",
           "method": "GET",
-          "path": "/media/audio2text?url=",
+          "path": "https://ada-api-vace.vercel.app/media/audio2text?url=",
           "status": "ready",
           "download": "",
-          "params": {
-            "url": "url="
-          }
+          "params": { "url": "url=" }
         }
       ]
     },
-
     {
       "name": "Image Generators",
       "items": [
@@ -80,23 +66,22 @@
           "name": "Blue Archive Random",
           "desc": "Blue Archive random character image.",
           "method": "GET",
-          "path": "/random/ba",
+          "path": "https://ada-api-vace.vercel.app/random/ba",
           "status": "ready",
-          "download": "/random/ba",
+          "download": "https://ada-api-vace.vercel.app/random/ba",
           "params": {}
         },
         {
           "name": "Waifu Random",
           "desc": "Random waifu anime image.",
           "method": "GET",
-          "path": "/random/waifu",
+          "path": "https://ada-api-vace.vercel.app/random/waifu",
           "status": "ready",
-          "download": "/random/waifu",
+          "download": "https://ada-api-vace.vercel.app/random/waifu",
           "params": {}
         }
       ]
     },
-
     {
       "name": "Search Tools",
       "items": [
@@ -104,23 +89,19 @@
           "name": "YouTube Search",
           "desc": "Search YouTube videos.",
           "method": "GET",
-          "path": "/search/yt?q=",
+          "path": "https://ada-api-vace.vercel.app/search/yt?q=",
           "status": "ready",
           "download": "",
-          "params": {
-            "query": "q="
-          }
+          "params": { "query": "q=" }
         },
         {
           "name": "Pinterest Search",
           "desc": "Search Pinterest images.",
           "method": "GET",
-          "path": "/search/pinterest?q=",
+          "path": "https://ada-api-vace.vercel.app/search/pinterest?q=",
           "status": "ready",
           "download": "",
-          "params": {
-            "query": "q="
-          }
+          "params": { "query": "q=" }
         }
       ]
     }
