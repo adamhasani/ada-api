@@ -11,7 +11,7 @@
           "name": "YouTube MP3",
           "desc": "Convert YouTube video to MP3. (user will be asked for video link)",
           "method": "GET",
-          "path": "https://ada-api-vace.vercel.app/api/ytmp3?url=",
+          "path": "https://ada-api-vace.vercel.app/api/ytmp3?url=https://youtu.be/eP3UsuxK30U?si=_fqzOY-KTLctC6pr",
           "status": "ready",
           "download": "https://ada-api-vace.vercel.app/api/ytmp3?url={query}&direct=1",
           "params": { "url": "url=" }
