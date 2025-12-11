@@ -20,7 +20,7 @@
           "name": "LuminAI",
           "desc": "LuminAI text chat.",
           "method": "GET",
-          "path": "https://YOUR_API_DOMAIN/ai/luminai?text=halo",
+          "path": "https://ada-api-vace.vercel.app/ai/luminai?text=halo",
           "status": "ready",
           "download": "https://ada-api-vace.vercel.app/downloads/luminai.apk",
           "params": { "text": "text=" }
@@ -34,7 +34,7 @@
           "name": "YouTube MP3",
           "desc": "Convert YouTube video to MP3. (user will be asked for video link)",
           "method": "GET",
-          "path": "https://YOUR_API_DOMAIN/yt/mp3?url=",
+          "path": "https://ada-api-vace.vercel.app/yt/mp3?url=",
           "status": "ready",
           "download": "https://ada-api-vace.vercel.app/yt/mp3?url=",
           "params": { "url": "url=" }
