@@ -3,7 +3,7 @@ const axios = require('axios');
 module.exports = function(app) {
     
     // 👇 KITA UBAH JADI PANJANG LAGI
-    app.get('/api/download/ytmp3', async (req, res) => {
+    app.get('/api/downloader/ytmp3', async (req, res) => {
         
         const url = req.query.url;
 
