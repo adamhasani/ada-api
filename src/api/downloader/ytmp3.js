@@ -1,72 +1,111 @@
-const axios = require('axios');
+// src/api/downloader/ytmp3.js
+const axios = require("axios");
 
-module.exports = function(app) {
-    app.get('/api/download/ytmp3', async (req, res) => {
-        const url = req.query.url;
+module.exports = function (app) {
 
-        if (!url) {
-            return res.status(400).json({
-                status: false,
-                creator: "Ada API",
-                error: "Parameter 'url' is required."
-            });
-        }
+    // CORS
+    app.use((req, res, next) => {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        if (req.method === "OPTIONS") return res.sendStatus(204);
+        next();
+    });
 
-        // Validasi Regex Link YouTube
-        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
-        if (!youtubeRegex.test(url)) {
-            return res.status(400).json({
-                status: false,
-                creator: "Ada API",
-                error: "Invalid YouTube URL."
-            });
-        }
-
+    // ENDPOINT RESMI SESUAI PERMINTAAN
+    app.get("/api/downloader/ytmp3", async (req, res) => {
         try {
-            const encodedUrl = encodeURIComponent(url);
-            const nekolabsUrl = `https://api.nekolabs.web.id/downloader/youtube/v1?url=${encodedUrl}&format=mp3`;
-            
-            const response = await axios.get(nekolabsUrl, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.4472.124 Safari/537.36'
-                }
-            });
-            
-            const data = response.data;
+            let url = req.query.url;
+            const direct = req.query.direct === "1";
 
-            // === PERBAIKAN DI SINI ===
-            // Nekolabs pakai 'success', bukan 'status'. Dan isinya di 'result', bukan 'data'.
-            if (!data || !data.success) {
-                return res.status(500).json({
+            if (!url) {
+                return res.status(400).json({
                     status: false,
                     creator: "Ada API",
-                    error: "Gagal mengambil data dari server downloader.",
-                    debug: data 
+                    error: "Parameter ?url= wajib diisi"
                 });
             }
 
-            res.status(200).json({
+            // Validasi dasar YouTube
+            const ytRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+            if (!ytRegex.test(url)) {
+                return res.status(400).json({
+                    status: false,
+                    creator: "Ada API",
+                    error: "URL YouTube tidak valid"
+                });
+            }
+
+            // Encode URL
+            const encodedUrl = encodeURIComponent(url);
+
+            // API Downloader Nekolabs
+            const upstream = `https://api.nekolabs.web.id/downloader/youtube/v1?url=${encodedUrl}&format=mp3`;
+
+            const response = await axios.get(upstream, {
+                headers: { "User-Agent": "Mozilla/5.0" },
+                timeout: 20000
+            });
+
+            const data = response.data;
+
+            if (!data || !data.success || !data.result) {
+                return res.status(502).json({
+                    status: false,
+                    creator: "Ada API",
+                    error: "Upstream error",
+                    debug: data
+                });
+            }
+
+            const result = data.result;
+            const downloadUrl = result.downloadUrl;
+
+            if (!downloadUrl) {
+                return res.status(502).json({
+                    status: false,
+                    creator: "Ada API",
+                    error: "Upstream tidak menyediakan downloadUrl"
+                });
+            }
+
+            // Redirect langsung? (Download otomatis)
+            if (direct) return res.redirect(downloadUrl);
+
+            // Jika tidak direct, kirim JSON
+            return res.status(200).json({
                 status: true,
                 creator: "Ada API",
                 metadata: {
-                    title: data.result.title,
-                    originalUrl: url,
-                    duration: data.result.duration,
-                    cover: data.result.cover
+                    title: result.title,
+                    duration: result.duration,
+                    cover: result.cover,
+                    originalUrl: url
                 },
-                // Link download ada di data.result.downloadUrl
                 result: {
-                    downloadUrl: data.result.downloadUrl,
-                    quality: data.result.quality,
-                    format: data.result.format
+                    downloadUrl,
+                    quality: result.quality,
+                    format: result.format
                 }
             });
 
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ 
-                status: false, 
-                error: error.message 
+        } catch (err) {
+            console.error(err);
+
+            if (err.response) {
+                return res.status(502).json({
+                    status: false,
+                    creator: "Ada API",
+                    error: "Upstream error",
+                    upstreamStatus: err.response.status,
+                    upstreamBody: err.response.data
+                });
+            }
+
+            return res.status(500).json({
+                status: false,
+                creator: "Ada API",
+                error: err.message
             });
         }
     });
