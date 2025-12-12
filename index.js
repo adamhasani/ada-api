@@ -2,52 +2,104 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
+const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// Middleware
+app.enable("trust proxy");
+app.set("json spaces", 2);
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
+app.use(cors());
 
-// --- 1. KONFIGURASI FOLDER (PENTING!) ---
-// Kita suruh server "masuk" ke folder api-page untuk cari CSS/JS
-app.use(express.static(path.join(process.cwd(), 'api-page')));
+// =======================================================
+// 1. ATUR FOLDER STATIS (Perbaikan Lokasi)
+// =======================================================
 
-// Kita juga izinkan server baca folder src (untuk settings.json)
-app.use('/src', express.static(path.join(process.cwd(), 'src')));
+// Arahkan ke folder 'api-gate' (Tempat index.html & script.js kamu)
+app.use(express.static(path.join(__dirname, 'api-gate')));
 
-// --- 2. LOAD ROUTE API ---
+// Folder src tetap (untuk settings.json)
+app.use('/src', express.static(path.join(__dirname, 'src')));
+
+// --- SAFE SETTINGS LOADER ---
+let globalCreator = "Ada API";
+try {
+    const settingsPath = path.join(__dirname, 'src', 'settings.json');
+    if (fs.existsSync(settingsPath)) {
+        const raw = fs.readFileSync(settingsPath, 'utf-8');
+        const json = JSON.parse(raw);
+        globalCreator = json.apiSettings.creator || "Ada API";
+        console.log("✅ Settings Loaded. Creator:", globalCreator);
+    }
+} catch (e) {
+    console.log("⚠️ Gagal baca settings:", e.message);
+}
+
+// Middleware Inject Creator
+app.use((req, res, next) => {
+    const originalJson = res.json;
+    res.json = function (data) {
+        if (data && typeof data === 'object' && !data.error) {
+            data.creator = globalCreator;
+        }
+        return originalJson.call(this, data);
+    };
+    next();
+});
+
+// =======================================================
+// 2. LOAD ROUTES (Perbaikan Nama Folder)
+// =======================================================
 function loadRoute(filePath) {
     try {
         require(filePath)(app);
-        console.log(`✅ Loaded: ${filePath}`);
+        console.log(`✅ Route OK: ${filePath}`);
     } catch (e) {
-        console.log(`⚠️ Skip: ${filePath} (${e.message})`);
+        // Tampilkan error kalau file gagal dimuat
+        console.error(`❌ Gagal Load [${filePath}]:`, e.message);
     }
 }
 
-// Pastikan file-file ini ada di folder src/api/...
-loadRoute('./src/api/download/ytmp3');
-loadRoute('./src/api/download/ytmp4');
-loadRoute('./src/api/tools/tourl');
-loadRoute('./src/api/random/bluearchive'); 
+// 👇 INI PERBAIKANNYA: Pakai 'downloader' (bukan 'download')
+loadRoute('./src/api/downloader/ytmp3');
+loadRoute('./src/api/downloader/ytmp4');
 
-// --- 3. HALAMAN UTAMA ---
+// Tool lain
+loadRoute('./src/api/tools/tourl');
+loadRoute('./src/api/random/bluearchive');
+
+// =======================================================
+// 3. HALAMAN UTAMA
+// =======================================================
 app.get('/', (req, res) => {
-    // Ambil index.html DARI DALAM FOLDER api-page
-    const indexPath = path.join(process.cwd(), 'api-page', 'index.html');
+    // Ambil index.html dari dalam api-gate
+    const indexPath = path.join(__dirname, 'api-gate', 'index.html');
     
-    if (fs.existsSync(indexPath)) {
-        res.sendFile(indexPath);
-    } else {
-        res.status(500).send(`
-            <h1>Error 500</h1>
-            <p>File index.html tidak ditemukan di dalam folder 'api-page'.</p>
-            <p>Cek apakah nama foldernya benar 'api-page'?</p>
-        `);
-    }
+    res.sendFile(indexPath, (err) => {
+        if (err) {
+            res.status(500).send(`
+                <h1>Error 500</h1>
+                <p>File <b>index.html</b> tidak ketemu di folder 'api-gate'.</p>
+                <p>Pastikan nama folder kamu benar 'api-gate' (huruf kecil semua).</p>
+            `);
+        }
+    });
 });
 
-app.listen(PORT, () => console.log(`Server running at ${PORT}`));
+// Custom 404
+app.use((req, res) => {
+    res.status(404).json({
+        status: false,
+        error: "404 Not Found (Endpoint salah atau file API gagal dimuat)"
+    });
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+
 module.exports = app;
