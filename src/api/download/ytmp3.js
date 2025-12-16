@@ -5,100 +5,114 @@ module.exports = function(app) {
     app.get('/api/download/ytmp3', async (req, res) => {
         const url = req.query.url;
 
-        // 1. Validasi Input
-        if (!url) {
-            return res.status(400).json({ status: false, creator: "Ada API", error: "Parameter 'url' is required." });
-        }
-        
-        // 2. Cek apakah itu link YouTube
-        // Regex diperluas biar support short link & music
-        if (!url.match(/youtu/)) {
-            return res.status(400).json({ status: false, creator: "Ada API", error: "Invalid YouTube URL." });
-        }
+        if (!url) return res.status(400).json({ status: false, error: "Url required" });
 
         try {
-            const encodedUrl = encodeURIComponent(url);
-
-            // --- SETTINGAN ANTI-DISCONNECT & ANTI-SSL ERROR ---
-            // Ini kunci agar "Socket Disconnected" tidak muncul lagi
+            // 1. SETUP NETWORK YANG LEBIH KUAT
+            // Force IPv4 (family: 4) untuk mengatasi masalah koneksi Vercel
             const agent = new https.Agent({  
                 keepAlive: true, 
-                rejectUnauthorized: false // Abaikan error sertifikat (penting buat scraping)
+                rejectUnauthorized: false, // Bypass SSL Error
+                minVersion: 'TLSv1' // Support server jadul
             });
 
             const axiosConfig = {
+                httpsAgent: agent,
+                timeout: 10000, // 10 Detik Timeout
+                // PENTING: Force IPv4 agar tidak disconnect di Vercel
+                family: 4, 
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/114.0.0.0 Safari/537.36',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                     'Referer': 'https://www.google.com/',
                     'Accept': 'application/json'
-                },
-                httpsAgent: agent, // Pasang agen disini
-                timeout: 8000 // Batas waktu 8 detik (agar serverless tidak timeout)
+                }
             };
 
-            // --- DAFTAR PEMBALAP (SERVER) ---
-            const racers = [
-                // 1. NEKO V1
-                async () => {
-                    const { data } = await axios.get(`https://api.nekolabs.web.id/downloader/youtube/v1?url=${encodedUrl}&format=mp3`, axiosConfig);
-                    if (!data || !data.success) throw new Error('V1 fail');
-                    return {
-                        server: 'Neko V1',
-                        title: data.result.title,
-                        cover: data.result.cover,
-                        downloadUrl: data.result.downloadUrl
-                    };
-                },
-                // 2. NEKO V2
-                async () => {
-                    const { data } = await axios.get(`https://api.nekolabs.web.id/downloader/youtube/v2?url=${encodedUrl}`, axiosConfig);
-                    if (!data || !data.success) throw new Error('V2 fail');
-                    return {
-                        server: 'Neko V2',
-                        title: data.result.title,
-                        cover: data.result.cover,
-                        downloadUrl: data.result.downloadUrl
-                    };
-                },
-                // 3. ZENZ API
-                async () => {
-                    const { data } = await axios.get(`https://api.zenzxz.my.id/api/downloader/ytmp3?url=${encodedUrl}`, axiosConfig);
-                    if (!data || !data.result) throw new Error('Zenz fail');
-                    return {
-                        server: 'Zenz',
-                        title: data.result.title,
-                        cover: data.result.thumb,
-                        downloadUrl: data.result.url
-                    };
-                },
-                // 4. YUPRA API
+            const encodedUrl = encodeURIComponent(url);
+
+            // 2. DAFTAR SERVER (Prioritas Yupra & Zenz karena lebih stabil di Vercel)
+            const tasks = [
+                // SERVER 1: YUPRA
                 async () => {
                     const { data } = await axios.get(`https://api.yupra.my.id/api/downloader/ytmp3?url=${encodedUrl}`, axiosConfig);
                     const r = data.result || data;
-                    if (!r || (!r.url && !r.download_url)) throw new Error('Yupra fail');
-                    return {
-                        server: 'Yupra',
-                        title: r.title,
-                        cover: r.thumb,
-                        downloadUrl: r.url || r.download_url
+                    if (!r || (!r.url && !r.download_url)) throw new Error('Yupra Fail');
+                    return { 
+                        server: 'Yupra', 
+                        title: r.title, 
+                        cover: r.thumb, 
+                        downloadUrl: r.url || r.download_url 
+                    };
+                },
+                // SERVER 2: ZENZ
+                async () => {
+                    const { data } = await axios.get(`https://api.zenzxz.my.id/api/downloader/ytmp3?url=${encodedUrl}`, axiosConfig);
+                    if (!data || !data.result) throw new Error('Zenz Fail');
+                    return { 
+                        server: 'Zenz', 
+                        title: data.result.title, 
+                        cover: data.result.thumb, 
+                        downloadUrl: data.result.url 
+                    };
+                },
+                // SERVER 3: NEKO V1
+                async () => {
+                    const { data } = await axios.get(`https://api.nekolabs.web.id/downloader/youtube/v1?url=${encodedUrl}&format=mp3`, axiosConfig);
+                    if (!data || !data.success) throw new Error('Neko V1 Fail');
+                    return { 
+                        server: 'Neko V1', 
+                        title: data.result.title, 
+                        cover: data.result.cover, 
+                        downloadUrl: data.result.downloadUrl 
                     };
                 }
             ];
 
-            // --- LOGIKA BALAPAN MANUAL (KOMPATIBEL SEMUA VERSI NODE) ---
-            // Kita tidak pakai Promise.any() karena bikin crash di Node versi lama.
-            // Kita pakai Promise biasa dengan logika counter.
-            
-            const winner = await new Promise((resolve, reject) => {
-                let failureCount = 0;
-                
-                // Jalankan semua server SEKALIGUS
-                racers.forEach(racer => {
-                    racer()
-                        .then(result => {
-                            // Kalau ada satu yang berhasil, langsung selesaikan (Resolve)
-                            resolve(result);
-                        })
+            // 3. EKSEKUSI BALAPAN (MANUAL & AMAN)
+            // Mencoba server satu per satu sampai ada yang berhasil (Sequential)
+            // Ini lebih aman daripada parallel untuk menghindari crash memori di Vercel Free Plan
+            let winner = null;
+            let errors = [];
+
+            for (const task of tasks) {
+                try {
+                    winner = await task();
+                    break; // Jika berhasil, stop loop
+                } catch (e) {
+                    errors.push(e.message);
+                }
+            }
+
+            if (!winner) {
+                throw new Error(`Semua server gagal. Details: ${errors.join(', ')}`);
+            }
+
+            // 4. KIRIM HASIL
+            res.status(200).json({
+                status: true,
+                creator: "Ada API",
+                server: winner.server,
+                metadata: {
+                    title: winner.title || 'Unknown',
+                    cover: winner.cover || ''
+                },
+                result: {
+                    downloadUrl: winner.downloadUrl
+                }
+            });
+
+        } catch (error) {
+            console.error("API FAIL:", error.message);
+            // Tampilkan error aslinya di JSON biar kita tahu salahnya dimana
+            res.status(500).json({ 
+                status: false, 
+                creator: "Ada API", 
+                error: "Server Error",
+                message: error.message 
+            });
+        }
+    });
+};                        })
                         .catch(err => {
                             // Kalau gagal, tambah counter
                             failureCount++;
