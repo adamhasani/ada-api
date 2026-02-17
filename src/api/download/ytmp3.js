@@ -7,7 +7,27 @@ module.exports = function(app) {
 
         // 1. Validasi URL
         if (!url) return res.json({ status: false, error: "Mana link-nya? Parameter 'url' kosong." });
+module.exports = function (app) {
+  app.get('/api/download/ytmp3', async (req, res) => {
+    const url = req.query.url;
 
+    if (!url) {
+      return res.json({ status: false, error: "Mana link-nya? Parameter 'url' kosong." });
+    }
+
+    try {
+      const encodedUrl = encodeURIComponent(url);
+      const agent = new https.Agent({ keepAlive: true, rejectUnauthorized: false });
+      const axiosConfig = {
+        httpsAgent: agent,
+        timeout: 4500,
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+      };
+
+      const fetchFrom = async (name, apiLink) => {
         try {
             const encodedUrl = encodeURIComponent(url);
 
@@ -72,7 +92,23 @@ module.exports = function(app) {
             if (!winner) {
                 // Jika semua null (gagal)
                 throw new Error("Semua 4 server (Yupra, Ryzen, Neko, Zenz) tidak merespon atau memblokir IP Vercel.");
+          const { data } = await axios.get(apiLink, axiosConfig);
+          if (!data) return null;
+
+          let result = null;
+          if (name === 'Neko' && data.success) {
+            result = { title: data.result.title, url: data.result.downloadUrl, cover: data.result.cover };
+          } else if (name === 'Zenz' && data.result) {
+            result = { title: data.result.title, url: data.result.url, cover: data.result.thumb };
+          } else if (name === 'Yupra') {
+            const r = data.result || data;
+            if (r.url || r.download_url) {
+              result = { title: r.title, url: r.url || r.download_url, cover: r.thumb };
             }
+          } else if (name === 'Ryzen') {
+            const r = data.result || data;
+            if (r.url) result = { title: r.title, url: r.url, cover: r.thumbnail };
+          }
 
             // 3. KIRIM HASIL
             res.json({
@@ -103,6 +139,7 @@ module.exports = function(app) {
 };                }
             });
 
+          return result ? { server: name, ...result } : null;
         } catch (error) {
             console.error("API FAIL:", error.message);
             // Tampilkan error aslinya di JSON biar kita tahu salahnya dimana
@@ -112,6 +149,8 @@ module.exports = function(app) {
                 error: "Server Error",
                 message: error.message 
             });
+          console.log(`${name} gagal: ${error.message}`);
+          return null;
         }
     });
 };                        })
@@ -229,6 +268,43 @@ module.exports = function(app) {
                 error: "Semua server (Neko, Zenz, Yupra) sedang sibuk.",
                 message: error.errors ? error.errors.map(e => e.message) : error.message
             });
+      };
+
+      const requests = [
+        fetchFrom('Yupra', `https://api.yupra.my.id/api/downloader/ytmp3?url=${encodedUrl}`),
+        fetchFrom('Ryzen', `https://api.ryzendesu.vip/api/downloader/ytmp3?url=${encodedUrl}`),
+        fetchFrom('Neko', `https://api.nekolabs.web.id/downloader/youtube/v1?url=${encodedUrl}&format=mp3`),
+        fetchFrom('Zenz', `https://api.zenzxz.my.id/api/downloader/ytmp3?url=${encodedUrl}`)
+      ];
+
+      const results = await Promise.all(requests);
+      const winner = results.find((r) => r !== null);
+
+      if (!winner) {
+        throw new Error('Semua server (Yupra, Ryzen, Neko, Zenz) tidak merespon atau memblokir IP server.');
+      }
+
+      return res.json({
+        status: true,
+        creator: 'Ada API',
+        server: winner.server,
+        metadata: {
+          title: winner.title || 'Unknown',
+          cover: winner.cover || ''
+        },
+        result: {
+          downloadUrl: winner.winnerUrl || winner.url
         }
     });
+      });
+    } catch (error) {
+      console.error('FATAL ERROR:', error.message);
+      return res.json({
+        status: false,
+        creator: 'Ada API',
+        message: 'Gagal Total',
+        debug_error: error.message
+      });
+    }
+  });
 };
